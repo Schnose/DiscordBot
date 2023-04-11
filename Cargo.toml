@@ -1,0 +1,87 @@
+[package]
+name = "schnose-discord-bot"
+version = "1.0.0"
+authors = ["AlphaKeks <alphakeks@dawn.sh>"]
+edition = "2021"
+description = "Discord Bot for CS:GO KZ using serenity.rs and poise"
+documentation = "https://github.com/Schnose/DiscordBot/wiki"
+readme = "./README.md"
+homepage = "https://github.com/Schnose"
+repository = "https://github.com/Schnose/DiscordBot"
+license-file = "./LICENSE"
+publish = false
+
+# Utilities
+[dependencies.schnosebot]
+git = "https://github.com/Schnose/SchnoseBot"
+
+# Error handling
+[dependencies.thiserror]
+version = "1"
+
+# Logging
+[dependencies.tracing]
+version = "0.1"
+
+# Utilities
+[dependencies.chrono]
+version = "0.4"
+
+[dependencies.regex]
+version = "1.7"
+
+[dependencies.num-format]
+version = "0.4"
+
+[dependencies.rand]
+version = "0.8"
+
+# JSON parsing
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1"
+
+[dependencies.toml]
+version = "0.5"
+
+# GOKZ
+[dependencies.gokz_rs]
+version = "0.18"
+features = ["global_api", "kzgo_api", "schnose_api"]
+
+# Async
+[dependencies.tokio]
+version = "1"
+features = ["full"]
+
+# SQL
+[dependencies.sqlx]
+version = "0.6"
+features = ["runtime-tokio-rustls", "postgres"]
+
+# Discord
+[dependencies.serenity]
+version = "0.11"
+default_features = false
+features = [
+	"builder",
+	"cache",
+	"client",
+	"gateway",
+	"model",
+	"rustls_backend",
+]
+
+[dependencies.poise]
+version = "0.5"
+
+# shuttle.rs
+[dependencies.shuttle-runtime]
+version = "0.13"
+
+[dependencies.shuttle-service]
+version = "0.13"
+
