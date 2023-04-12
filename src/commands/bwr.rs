@@ -71,7 +71,7 @@ pub async fn bwr(
 			};
 
 			let player_name =
-				format!("[{}](https://kzgo.eu/players/{})", wr.player_name, wr.steam_id.as_id64());
+				format!("[{}](https://kzgo.eu/players/{})", wr.player_name, wr.steam_id);
 
 			(
 				format!("{time} {teleports}\n> by {player_name}"),
@@ -85,7 +85,7 @@ pub async fn bwr(
 		Ok(wr) => {
 			let time = time::format(wr.time);
 			let player_name =
-				format!("[{}](https://kzgo.eu/players/{})", wr.player_name, wr.steam_id.as_id64());
+				format!("[{}](https://kzgo.eu/players/{})", wr.player_name, wr.steam_id);
 
 			(
 				format!("{time} \n> by {player_name}"),
