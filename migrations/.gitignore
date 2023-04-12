@@ -1,1 +1,2 @@
-connect.sh
+connect_dev.sh
+connect_prod.sh
