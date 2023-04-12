@@ -39,6 +39,7 @@ mod event_handler;
 mod shuttle_integration;
 mod state;
 mod target;
+mod utils;
 
 #[shuttle_runtime::main]
 async fn schnosebot() -> ShuttleResult {
@@ -67,6 +68,7 @@ async fn schnosebot() -> ShuttleResult {
 		commands: vec![
 			commands::apistatus(),
 			commands::bmaptop(),
+			commands::bpb(),
 			commands::db(),
 			commands::ping(),
 		],

@@ -40,12 +40,16 @@ pub enum Error {
 
 	#[error("User does not have a mode preference set. Please use `/mode` to save a mode preference or specify one.")]
 	NoModePreference,
+
+	#[error("No records found")]
+	NoRecords,
 }
 
 impl Error {
 	#[tracing::instrument(skip(error))]
 	pub async fn handle(error: FrameworkError<'_, State, crate::error::Error>) {
-		warn!("Slash Command failed. {error:?}");
+		warn!("Slash Command failed.");
+		debug!("{error:?}");
 
 		let (content, ephemeral) = match &error {
 			poise::FrameworkError::Command { error, .. } => (error.to_string(), false),

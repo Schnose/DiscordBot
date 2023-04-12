@@ -1,4 +1,12 @@
-use {crate::error::Error, gokz_rs::SteamID, lazy_static::lazy_static, regex::Regex};
+use {
+	crate::{
+		error::Error,
+		state::{Context, StateContainer},
+	},
+	gokz_rs::{PlayerIdentifier, SteamID},
+	lazy_static::lazy_static,
+	regex::Regex,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[allow(dead_code)]
@@ -14,6 +22,24 @@ pub enum Target {
 
 	/// The user has entered _something_ -> we interpret it as a name
 	Name { name: String },
+}
+
+impl Target {
+	pub async fn into_player(self, ctx: &Context<'_>) -> PlayerIdentifier {
+		match self {
+			Target::SteamID { steam_id } => steam_id.into(),
+			Target::Name { name } => name.into(),
+			Target::None { user_id } | Target::Mention { user_id } => {
+				match ctx.fetch_user_by_id(user_id).await {
+					Some(user) => match user.steam_id {
+						Some(steam_id) => steam_id.into(),
+						None => user.name.into(),
+					},
+					None => ctx.author().name.clone().into(),
+				}
+			}
+		}
+	}
 }
 
 impl std::fmt::Display for Target {
