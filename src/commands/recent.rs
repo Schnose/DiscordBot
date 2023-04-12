@@ -76,8 +76,8 @@ pub async fn recent(
 
 		let teleports = match record.teleports {
 			0 => String::new(),
-			1 => String::from("(1 TP)"),
-			n => format!("({n} TPs)"),
+			1 => String::from(" (1 TP)"),
+			n => format!(" ({n} TPs)"),
 		};
 
 		let discord_timestamp = format!("<t:{}:R>", record.created_on.timestamp());

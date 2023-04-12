@@ -73,5 +73,5 @@ pub async fn paginate(ctx: &Context<'_>, embeds: Vec<CreateEmbed>) -> Result<()>
 			.await?;
 	}
 
-	todo!()
+	Ok(())
 }
