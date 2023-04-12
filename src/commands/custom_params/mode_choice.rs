@@ -24,8 +24,7 @@ impl ModeChoice {
 	pub async fn figure_out(target: Target, ctx: &Context<'_>) -> Mode {
 		ctx.fetch_user(target.clone())
 			.await
-			.map(|user| user.mode)
-			.flatten()
+			.and_then(|user| user.mode)
 			.unwrap_or(Mode::KZTimer)
 	}
 }

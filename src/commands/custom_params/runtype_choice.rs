@@ -6,7 +6,7 @@ pub enum RuntypeChoice {
 	TP,
 
 	#[name = "PRO"]
-	PRO,
+	Pro,
 }
 
 impl From<RuntypeChoice> for bool {

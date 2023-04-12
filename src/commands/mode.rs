@@ -26,9 +26,7 @@ pub async fn mode(
 ) -> Result<()> {
 	ctx.defer().await?;
 
-	let mode: Option<Mode> = mode_choice
-		.map(|choice| choice.into())
-		.flatten();
+	let mode: Option<Mode> = mode_choice.and_then(|choice| choice.into());
 
 	let (name, id) = (&ctx.author().name, ctx.author_id());
 

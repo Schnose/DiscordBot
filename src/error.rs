@@ -9,7 +9,7 @@ use {
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone, Error, PartialEq, Eq)]
-#[allow(dead_code)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Error {
 	#[error("Some unknown error occurred.")]
 	Unknown,
@@ -121,6 +121,7 @@ impl Error {
 	}
 }
 
+#[allow(clippy::cognitive_complexity)] // ???
 impl From<serenity::Error> for Error {
 	fn from(error: serenity::Error) -> Self {
 		match error {
@@ -158,6 +159,7 @@ impl From<gokz_rs::Error> for Error {
 	}
 }
 
+#[allow(clippy::cognitive_complexity)] // ???
 impl From<sqlx::Error> for Error {
 	fn from(error: sqlx::Error) -> Self {
 		error!("SQLx Error.");
