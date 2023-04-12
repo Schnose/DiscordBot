@@ -5,6 +5,9 @@ mod pagination;
 mod apistatus;
 pub use apistatus::apistatus;
 
+mod bmaptop;
+pub use bmaptop::bmaptop;
+
 mod db;
 pub use db::db;
 

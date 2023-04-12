@@ -27,6 +27,18 @@ impl std::fmt::Display for Target {
 	}
 }
 
+impl From<&u64> for Target {
+	fn from(user_id: &u64) -> Self {
+		Self::None { user_id: *user_id }
+	}
+}
+
+impl From<u64> for Target {
+	fn from(user_id: u64) -> Self {
+		Self::None { user_id }
+	}
+}
+
 lazy_static! {
 	pub static ref MENTION_REGEX: Regex =
 		Regex::new(r#"^<@[0-9]+>$"#).expect("Failed to compile regex.");

@@ -1,4 +1,11 @@
-use {gokz_rs::Mode, poise::ChoiceParameter};
+use {
+	crate::{
+		state::{Context, StateContainer},
+		target::Target,
+	},
+	gokz_rs::Mode,
+	poise::ChoiceParameter,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ChoiceParameter)]
 pub enum ModeChoice {
@@ -10,6 +17,17 @@ pub enum ModeChoice {
 
 	#[name = "Vanilla"]
 	Vanilla = 202,
+}
+
+impl ModeChoice {
+	/// Figure out a mode to use if the user did not specify one.
+	pub async fn figure_out(target: Target, ctx: &Context<'_>) -> Mode {
+		ctx.fetch_user(target.clone())
+			.await
+			.map(|user| user.mode)
+			.flatten()
+			.unwrap_or(Mode::KZTimer)
+	}
 }
 
 impl From<ModeChoice> for Mode {

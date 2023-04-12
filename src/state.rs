@@ -3,8 +3,9 @@ use {
 		config::{self, Config},
 		database,
 		error::Error,
+		target::Target,
 	},
-	gokz_rs::{Mode, SteamID},
+	gokz_rs::{MapIdentifier, Mode, SteamID},
 	poise::async_trait,
 	schnosebot::global_map::GlobalMap,
 	sqlx::{postgres::PgPoolOptions, Pool, Postgres, QueryBuilder},
@@ -92,7 +93,22 @@ pub trait StateContainer {
 	fn db(&self) -> &Pool<Postgres>;
 	fn maps(&self) -> &[GlobalMap];
 	fn map_names(&self) -> &[String];
+	fn get_map(&self, map_identifier: impl Into<MapIdentifier>) -> Option<GlobalMap>;
 
+	fn author_id(&self) -> u64;
+
+	async fn fetch_user(&self, target: Target) -> Option<database::User> {
+		match target {
+			Target::None { user_id } | Target::Mention { user_id } => {
+				self.fetch_user_by_id(user_id).await
+			}
+			Target::SteamID { steam_id } => {
+				self.fetch_user_by_steam_id(steam_id)
+					.await
+			}
+			Target::Name { name } => self.fetch_user_by_name(&name).await,
+		}
+	}
 	async fn fetch_user_by_id(&self, discord_id: u64) -> Option<database::User>;
 	async fn fetch_user_by_name(&self, username: &str) -> Option<database::User>;
 	async fn fetch_user_by_steam_id(&self, steam_id: SteamID) -> Option<database::User>;
@@ -131,6 +147,14 @@ impl StateContainer for Context<'_> {
 
 	fn map_names(&self) -> &[String] {
 		&self.data().global_maps_names
+	}
+
+	fn get_map(&self, map_identifier: impl Into<MapIdentifier>) -> Option<GlobalMap> {
+		GlobalMap::fuzzy_search(self.maps(), map_identifier)
+	}
+
+	fn author_id(&self) -> u64 {
+		*self.author().id.as_u64()
 	}
 
 	async fn fetch_user_by_id(&self, discord_id: u64) -> Option<database::User> {

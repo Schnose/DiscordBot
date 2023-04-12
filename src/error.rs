@@ -34,6 +34,12 @@ pub enum Error {
 
 	#[error("Expected {expected} but got nothing.")]
 	EmptyInput { expected: String },
+
+	#[error("`{input}` is not a global map.")]
+	MapNotGlobal { input: String },
+
+	#[error("User does not have a mode preference set. Please use `/mode` to save a mode preference or specify one.")]
+	NoModePreference,
 }
 
 impl Error {
