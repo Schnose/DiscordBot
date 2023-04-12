@@ -13,10 +13,10 @@ use {
 	schnosebot::time,
 };
 
-/// Top 100 records on a bonus.
+/// Top 100 records on a map.
 ///
 /// This command will fetch the top 100 (or less, if there are less than 100 completions) records \
-/// on a particular bonus. You are required to specify a `map` and may also specify the \
+/// on a particular map. You are required to specify a `map` and may also specify the \
 /// following options:
 ///
 /// - `mode`: `KZTimer` / `SimpleKZ` / `Vanilla`
@@ -25,11 +25,9 @@ use {
 ///     preference in the database, see `/mode`.
 /// - `runtype`: `TP` / `PRO`
 ///   - If you don't specify this, the bot will default to `PRO`.
-/// - `course`: this can be any integer between 1-255.
-///   - If you either don't specify this, or put in `0`, the bot will default to `1`.
 #[tracing::instrument(skip(ctx), fields(user = ctx.author().tag()))]
 #[poise::command(slash_command, ephemeral, on_error = "Error::handle")]
-pub async fn bmaptop(
+pub async fn maptop(
 	ctx: Context<'_>,
 
 	#[description = "Choose a map"]
@@ -44,10 +42,6 @@ pub async fn bmaptop(
 	#[description = "TP/PRO"]
 	#[rename = "runtype"]
 	runtype_choice: Option<RuntypeChoice>,
-
-	#[description = "Which bonus?"]
-	#[rename = "course"]
-	course_choice: Option<u8>,
 ) -> Result<()> {
 	ctx.defer().await?;
 
@@ -62,10 +56,8 @@ pub async fn bmaptop(
 
 	let runtype = matches!(runtype_choice, Some(RuntypeChoice::TP));
 
-	let course = course_choice.unwrap_or(1).max(1);
-
 	let maptop =
-		global_api::get_maptop(map.name.clone().into(), mode, runtype, course, ctx.gokz_client())
+		global_api::get_maptop(map.name.clone().into(), mode, runtype, 0, ctx.gokz_client())
 			.await?;
 
 	let mut embeds = Vec::new();
@@ -79,13 +71,12 @@ pub async fn bmaptop(
 	for (page_idx, records) in maptop.chunks(chunk_size).enumerate() {
 		temp.color(ctx.color())
 			.title(format!(
-				"[{} {}] Top 100 records on {} B{}",
+				"[{} {}] Top 100 records on {}",
 				mode.short(),
 				if runtype { "TP" } else { "PRO" },
-				&map.name,
-				course
+				&map.name
 			))
-			.url(format!("{}?{}=&bonus={}", map.kzgo_link(), mode.short().to_lowercase(), course))
+			.url(format!("{}?{}=", map.kzgo_link(), mode.short().to_lowercase()))
 			.thumbnail(map.thumbnail())
 			.footer(|footer| {
 				footer.text(format!("{} | Page {} / {}", ctx.schnose(), page_idx + 1, max_pages))
