@@ -43,3 +43,6 @@ pub use ping::ping;
 
 mod profile;
 pub use profile::profile;
+
+mod random;
+pub use random::random;
