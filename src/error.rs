@@ -41,8 +41,14 @@ pub enum Error {
 	#[error("User does not have a mode preference set. Please use `/mode` to save a mode preference or specify one.")]
 	NoModePreference,
 
-	#[error("No records found")]
+	#[error("No records found.")]
 	NoRecords,
+
+	#[error("No database entries found.")]
+	NoDatabaseEntries,
+
+	#[error("Failed to access database.")]
+	DatabaseAccess,
 }
 
 impl Error {
@@ -149,5 +155,24 @@ impl From<gokz_rs::Error> for Error {
 		error!("GOKZ Error.");
 		debug!("{error:?}");
 		Self::GOKZ { error }
+	}
+}
+
+impl From<sqlx::Error> for Error {
+	fn from(error: sqlx::Error) -> Self {
+		error!("SQLx Error.");
+		debug!("{error:?}");
+
+		match error {
+			sqlx::Error::Database(why) => {
+				debug!("{why:?}");
+				Self::DatabaseAccess
+			}
+			sqlx::Error::RowNotFound => Self::NoDatabaseEntries,
+			why => {
+				debug!("{why:?}");
+				Self::Unknown
+			}
+		}
 	}
 }
