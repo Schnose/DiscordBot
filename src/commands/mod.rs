@@ -32,5 +32,8 @@ pub use maptop::maptop;
 mod mode;
 pub use mode::mode;
 
+mod nocrouch;
+pub use nocrouch::nocrouch;
+
 mod ping;
 pub use ping::ping;
