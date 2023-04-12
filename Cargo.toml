@@ -47,9 +47,6 @@ features = ["derive"]
 [dependencies.serde_json]
 version = "1"
 
-[dependencies.toml]
-version = "0.5"
-
 # GOKZ
 [dependencies.gokz_rs]
 version = "0.18"
