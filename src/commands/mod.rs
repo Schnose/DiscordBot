@@ -49,3 +49,6 @@ pub use random::random;
 
 mod recent;
 pub use recent::recent;
+
+mod report;
+pub use report::report;
