@@ -1,6 +1,7 @@
 use {
 	crate::state::State,
 	poise::FrameworkError,
+	std::num::TryFromIntError,
 	thiserror::Error,
 	tracing::{debug, error, trace, warn},
 };
@@ -21,6 +22,12 @@ pub enum Error {
 
 	#[error("`{input}` is not a valid input. Input must be between `{min}` and `{max}`.")]
 	OutOfRange { input: u64, min: u64, max: u64 },
+
+	#[error("Failed parsing database row. (`{col}`)")]
+	BadDbRow { col: String },
+
+	#[error("{error}")]
+	GOKZ { error: gokz_rs::Error },
 }
 
 impl Error {
@@ -110,5 +117,21 @@ impl From<serenity::Error> for Error {
 				Self::Unknown
 			}
 		}
+	}
+}
+
+impl From<TryFromIntError> for Error {
+	fn from(error: TryFromIntError) -> Self {
+		error!("Failed to parse integer.");
+		debug!("{error:?}");
+		Self::Custom(String::from("Failed to parse integer."))
+	}
+}
+
+impl From<gokz_rs::Error> for Error {
+	fn from(error: gokz_rs::Error) -> Self {
+		error!("GOKZ Error.");
+		debug!("{error:?}");
+		Self::GOKZ { error }
 	}
 }

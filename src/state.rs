@@ -1,10 +1,14 @@
 use {
 	crate::{
 		config::{self, Config},
+		database,
 		error::Error,
 	},
+	gokz_rs::{Mode, SteamID},
+	poise::async_trait,
 	schnosebot::global_map::GlobalMap,
-	sqlx::{postgres::PgPoolOptions, Pool, Postgres},
+	sqlx::{postgres::PgPoolOptions, Pool, Postgres, QueryBuilder},
+	tracing::error,
 };
 
 pub type Context<'ctx> = poise::Context<'ctx, State, Error>;
@@ -78,7 +82,9 @@ impl State {
 	}
 }
 
+#[async_trait]
 pub trait StateContainer {
+	fn config(&self) -> &Config;
 	fn schnose(&self) -> &str;
 	fn icon_url(&self) -> &str;
 	fn color(&self) -> (u8, u8, u8);
@@ -86,9 +92,38 @@ pub trait StateContainer {
 	fn db(&self) -> &Pool<Postgres>;
 	fn maps(&self) -> &[GlobalMap];
 	fn map_names(&self) -> &[String];
+
+	async fn fetch_user_by_id(
+		&self,
+		discord_id: u64,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User>;
+
+	async fn fetch_user_by_name(
+		&self,
+		username: &str,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User>;
+
+	async fn fetch_user_by_steam_id(
+		&self,
+		steam_id: SteamID,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User>;
+
+	async fn fetch_user_by_mode(
+		&self,
+		mode: Mode,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User>;
 }
 
+#[async_trait]
 impl StateContainer for Context<'_> {
+	fn config(&self) -> &Config {
+		&self.data().config
+	}
+
 	fn schnose(&self) -> &str {
 		&self.data().schnose
 	}
@@ -115,5 +150,131 @@ impl StateContainer for Context<'_> {
 
 	fn map_names(&self) -> &[String] {
 		&self.data().global_maps_names
+	}
+
+	async fn fetch_user_by_id(
+		&self,
+		discord_id: u64,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User> {
+		let table_name = match &self.config().environment {
+			config::Environment::Development { users_table, .. } => users_table,
+			config::Environment::Production { users_table, .. } => users_table,
+		};
+
+		match sqlx::query_as::<_, database::UserRow>(&format!(
+			"SELECT * FROM {table_name} WHERE discord_id = {discord_id}"
+		))
+		.fetch_optional(database_connection)
+		.await
+		{
+			Ok(row) => match row?.try_into() {
+				Ok(user) => Some(user),
+				Err(why) => {
+					error!("Failed to parse user: {why:?}");
+					None
+				}
+			},
+			Err(why) => {
+				error!("Failed to fetch user from DB: {why:?}");
+				None
+			}
+		}
+	}
+
+	async fn fetch_user_by_name(
+		&self,
+		username: &str,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User> {
+		let table_name = match &self.config().environment {
+			config::Environment::Development { users_table, .. } => users_table,
+			config::Environment::Production { users_table, .. } => users_table,
+		};
+
+		let mut query = QueryBuilder::new(format!("SELECT * FROM {table_name}"));
+		query
+			.push(" WHERE name LIKE ")
+			.push_bind(format!("%{username}%"));
+
+		match query
+			.build_query_as::<database::UserRow>()
+			.fetch_optional(database_connection)
+			.await
+		{
+			Ok(row) => match row?.try_into() {
+				Ok(user) => Some(user),
+				Err(why) => {
+					error!("Failed to parse user: {why:?}");
+					None
+				}
+			},
+			Err(why) => {
+				error!("Failed to fetch user from DB: {why:?}");
+				None
+			}
+		}
+	}
+
+	async fn fetch_user_by_steam_id(
+		&self,
+		steam_id: SteamID,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User> {
+		let table_name = match &self.config().environment {
+			config::Environment::Development { users_table, .. } => users_table,
+			config::Environment::Production { users_table, .. } => users_table,
+		};
+
+		match sqlx::query_as::<_, database::UserRow>(&format!(
+			"SELECT * FROM {table_name} WHERE steam_id = {}",
+			steam_id.as_id32()
+		))
+		.fetch_optional(database_connection)
+		.await
+		{
+			Ok(row) => match row?.try_into() {
+				Ok(user) => Some(user),
+				Err(why) => {
+					error!("Failed to parse user: {why:?}");
+					None
+				}
+			},
+			Err(why) => {
+				error!("Failed to fetch user from DB: {why:?}");
+				None
+			}
+		}
+	}
+
+	async fn fetch_user_by_mode(
+		&self,
+		mode: Mode,
+		database_connection: &Pool<Postgres>,
+	) -> Option<database::User> {
+		let table_name = match &self.config().environment {
+			config::Environment::Development { users_table, .. } => users_table,
+			config::Environment::Production { users_table, .. } => users_table,
+		};
+
+		match sqlx::query_as::<_, database::UserRow>(&format!(
+			"SELECT * FROM {table_name} WHERE mode = {}",
+			mode as u8
+		))
+		.fetch_optional(database_connection)
+		.await
+		{
+			Ok(row) => match row?.try_into() {
+				Ok(user) => Some(user),
+				Err(why) => {
+					error!("Failed to parse user: {why:?}");
+					None
+				}
+			},
+			Err(why) => {
+				error!("Failed to fetch user from DB: {why:?}");
+				None
+			}
+		}
 	}
 }

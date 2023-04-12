@@ -33,6 +33,7 @@ use {
 
 mod commands;
 mod config;
+mod database;
 mod error;
 mod event_handler;
 mod shuttle_integration;
