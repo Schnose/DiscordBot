@@ -2,8 +2,8 @@
 //! and [poise](https://github.com/serenity-rs/poise).
 //!
 //! It talks to different APIs and its own Database to provide useful functionality that you would
-//! otherwise only get ingame or from a website like [KZ:GO](https://kzgo.eu). This functionality mostly
-//! revolves around `/` commands, including:
+//! otherwise only get ingame or from a website like [KZ:GO](https://kzgo.eu). This functionality
+//! mostly revolves around `/` commands, including:
 //! - `/pb`
 //! - `/wr`
 //! - `/maptop`
