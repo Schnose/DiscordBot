@@ -1,0 +1,175 @@
+use {
+	super::{
+		custom_params::{ModeChoice, RuntypeChoice, TierChoice},
+		pagination,
+	},
+	crate::{
+		error::{Error, Result},
+		state::{Context, StateContainer},
+		target::Target,
+	},
+	gokz_rs::{global_api, kzgo_api, schnose_api, Tier},
+	poise::serenity_prelude::CreateEmbed,
+};
+
+/// Check which maps you still need to finish.
+///
+/// This command will fetch all maps that you haven't finished yet in a particular mode. You may \
+/// specify the following parameters:
+///
+/// - `mode`: `KZTimer` / `SimpleKZ` / `Vanilla`
+///   - If you don't specify this, the bot will search the database for your UserID. If it can't \
+///     find one, or you don't have a mode preference set, the command will fail. To save a mode \
+///     preference in the database, see `/mode`.
+/// - `runtype`: `TP` / `PRO`
+///   - If you don't specify this, the bot will default to `PRO`.
+/// - `tier`: If you don't specify this, the bot will fetch maps for all tiers.
+/// - `player`: this can be any string. The bot will try its best to interpret it as something \
+///   useful. If you want to help it with that, specify one of the following:
+///   - a `SteamID`, e.g. `STEAM_1:1:161178172`, `U:1:322356345` or `76561198282622073`
+///   - a `Mention`, e.g. `@MyBestFriend`
+///   - a player's name, e.g. `AlphaKeks`
+///   - If you don't specify this, the bot will search the database for your UserID. If it can't \
+///     find one, or you don't have a SteamID set, the command will fail. To save a mode \
+///     preference in the database, see `/setsteam`.
+#[tracing::instrument(skip(ctx), fields(user = ctx.author().tag()))]
+#[poise::command(slash_command, ephemeral, on_error = "Error::handle")]
+pub async fn unfinished(
+	ctx: Context<'_>,
+
+	#[description = "KZT/SKZ/VNL"]
+	#[rename = "mode"]
+	mode_choice: Option<ModeChoice>,
+
+	#[description = "TP/PRO"]
+	#[rename = "runtype"]
+	runtype_choice: Option<RuntypeChoice>,
+
+	#[description = "Filter by map difficulty"]
+	#[rename = "tier"]
+	tier_choice: Option<TierChoice>,
+
+	#[description = "The player you want to target."]
+	#[rename = "player"]
+	target: Option<String>,
+) -> Result<()> {
+	ctx.defer().await?;
+
+	let mode = match mode_choice {
+		Some(choice) => choice.into(),
+		None => ModeChoice::figure_out(ctx.author_id().into(), &ctx).await,
+	};
+
+	let runtype = matches!(runtype_choice, Some(RuntypeChoice::TP));
+
+	let target: Target = match target {
+		None => ctx.author_id().into(),
+		Some(target) => target.parse()?,
+	};
+
+	let player_identifier = target.into_player(&ctx).await;
+
+	let player = schnose_api::get_player(player_identifier.clone(), ctx.gokz_client()).await?;
+
+	let unfinished = global_api::get_unfinished(
+		player_identifier,
+		mode,
+		runtype,
+		tier_choice.map(Tier::from),
+		ctx.gokz_client(),
+	)
+	.await?
+	.map(|maps| {
+		maps.into_iter()
+			.map(|map| {
+				if tier_choice.is_some() {
+					map.name
+				} else {
+					format!("{} (T{})", map.name, map.difficulty as u8)
+				}
+			})
+			.collect::<Vec<_>>()
+	});
+
+	let avatar = kzgo_api::get_avatar(player.steam_id, ctx.gokz_client())
+		.await
+		.map(|user| user.avatar_url)
+		.unwrap_or_default();
+
+	let mut template = CreateEmbed::default()
+		.color(ctx.color())
+		.title(format!(
+			"{} {} {}",
+			mode.short(),
+			if runtype { "TP" } else { "PRO" },
+			tier_choice.map_or_else(String::new, |tier| format!("[T{}]", tier as u8))
+		))
+		.url(format!(
+			"https://kzgo.eu/players/{}?{}=",
+			player.steam_id,
+			mode.short().to_lowercase()
+		))
+		.thumbnail(avatar)
+		.description("Congrats! You have no maps left to finish 🥳")
+		.footer(|f| {
+			f.text(format!("Player: {}", player.name))
+				.icon_url(ctx.icon_url())
+		})
+		.to_owned();
+
+	match unfinished {
+		None => {
+			ctx.send(|reply| {
+				reply.embed(|e| {
+					*e = template;
+					e
+				})
+			})
+			.await?;
+		}
+		Some(maps) if maps.len() <= 10 => {
+			let description = maps.join("\n");
+
+			ctx.send(|reply| {
+				reply.embed(|e| {
+					template.description(description);
+					*e = template;
+					e
+				})
+			})
+			.await?;
+		}
+		Some(maps) => {
+			let mut embeds = Vec::new();
+			let chunk_size = 10;
+			let len = maps.len();
+			let max_pages = (maps.len() as f64 / chunk_size as f64).ceil() as u8;
+			for (page_idx, map_names) in maps.chunks(chunk_size).enumerate() {
+				let mut temp = template.clone();
+				temp.title(format!(
+					"{} maps - {} {} {}",
+					len,
+					mode.short(),
+					if runtype { "TP" } else { "PRO" },
+					tier_choice.map_or_else(String::new, |tier| format!("[T{}]", tier as u8))
+				))
+				.description(map_names.join("\n"))
+				.footer(|f| {
+					f.text(format!(
+						"Player: {} | Page {} / {}",
+						&player.name,
+						page_idx + 1,
+						max_pages
+					))
+					.icon_url(ctx.icon_url())
+				});
+
+				embeds.push(temp);
+			}
+
+			pagination::paginate(&ctx, embeds).await?;
+		}
+	};
+
+	Ok(())
+}
