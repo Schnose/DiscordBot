@@ -35,5 +35,8 @@ pub use mode::mode;
 mod nocrouch;
 pub use nocrouch::nocrouch;
 
+mod pb;
+pub use pb::pb;
+
 mod ping;
 pub use ping::ping;
