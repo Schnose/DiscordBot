@@ -64,7 +64,11 @@ async fn schnosebot() -> ShuttleResult {
 			.map(Into::into)
 			.collect(),
 		prefix_options: PrefixFrameworkOptions { ignore_bots: true, ..Default::default() },
-		commands: vec![commands::ping(), commands::db()],
+		commands: vec![
+			commands::ping(),
+			commands::db(),
+			commands::apistatus(),
+		],
 		event_handler: |ctx, event, framework_ctx, state| {
 			Box::pin(event_handler::handle(ctx, event, framework_ctx, state))
 		},
