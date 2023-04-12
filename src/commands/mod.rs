@@ -1,6 +1,6 @@
-mod custom_params;
-
 mod autocomplete;
+mod custom_params;
+mod pagination;
 
 mod apistatus;
 pub use apistatus::apistatus;
