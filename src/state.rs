@@ -150,7 +150,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_id(&self, discord_id: u64) -> Option<database::User> {
-		let table_name = &self.config().database_url;
+		let table_name = &self.config().users_table;
 
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE discord_id = {discord_id}"
@@ -173,7 +173,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_name(&self, username: &str) -> Option<database::User> {
-		let table_name = &self.config().database_url;
+		let table_name = &self.config().users_table;
 
 		let mut query = QueryBuilder::new(format!("SELECT * FROM {table_name}"));
 		query
@@ -200,7 +200,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_steam_id(&self, steam_id: SteamID) -> Option<database::User> {
-		let table_name = &self.config().database_url;
+		let table_name = &self.config().users_table;
 
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE steam_id = {}",
@@ -224,7 +224,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_mode(&self, mode: Mode) -> Option<database::User> {
-		let table_name = &self.config().database_url;
+		let table_name = &self.config().users_table;
 
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE mode = {}",
