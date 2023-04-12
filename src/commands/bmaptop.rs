@@ -79,7 +79,7 @@ pub async fn bmaptop(
 	for (page_idx, records) in maptop.chunks(chunk_size).enumerate() {
 		temp.color(ctx.color())
 			.title(format!("[{}] Top 100 records on {} B{}", mode.short(), &map.name, course))
-			.url(format!("{}?{}=&bonuse={}", map.kzgo_link(), mode.short().to_lowercase(), course))
+			.url(format!("{}?{}=&bonus={}", map.kzgo_link(), mode.short().to_lowercase(), course))
 			.thumbnail(map.thumbnail())
 			.footer(|footer| {
 				footer.text(format!("{} | Page {} / {}", ctx.schnose(), page_idx + 1, max_pages))
