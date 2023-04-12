@@ -6,3 +6,6 @@ pub use runtype_choice::RuntypeChoice;
 
 mod mode_choice;
 pub use mode_choice::ModeChoice;
+
+mod db_mode_choice;
+pub use db_mode_choice::DBModeChoice;
