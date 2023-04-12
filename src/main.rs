@@ -73,6 +73,7 @@ async fn schnosebot() -> ShuttleResult {
 			commands::bwr(),
 			commands::db(),
 			commands::invite(),
+			commands::map(),
 			commands::ping(),
 		],
 		event_handler: |ctx, event, framework_ctx, state| {
