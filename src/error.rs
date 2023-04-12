@@ -8,7 +8,7 @@ use {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone, Error, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum Error {
 	#[error("Some unknown error occurred.")]
@@ -31,6 +31,9 @@ pub enum Error {
 
 	#[error("User `{user}` is not in the database.")]
 	UserNotInDatabase { user: Target },
+
+	#[error("Expected {expected} but got nothing.")]
+	EmptyInput { expected: String },
 }
 
 impl Error {

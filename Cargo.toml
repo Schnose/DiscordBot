@@ -36,6 +36,9 @@ version = "0.4"
 [dependencies.rand]
 version = "0.8"
 
+[dependencies.lazy_static]
+version = "1.4"
+
 # JSON parsing
 [dependencies.serde]
 version = "1"
