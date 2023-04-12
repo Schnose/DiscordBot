@@ -1,5 +1,7 @@
 mod custom_params;
 
+mod autocomplete;
+
 mod apistatus;
 pub use apistatus::apistatus;
 
