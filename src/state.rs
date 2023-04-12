@@ -1,10 +1,5 @@
 use {
-	crate::{
-		config::{self, Config},
-		database,
-		error::Error,
-		target::Target,
-	},
+	crate::{config::Config, database, error::Error, target::Target},
 	gokz_rs::{MapIdentifier, Mode, SteamID},
 	poise::async_trait,
 	schnosebot::global_map::GlobalMap,
@@ -54,10 +49,7 @@ impl State {
 		let database_connection = PgPoolOptions::new()
 			.min_connections(5)
 			.max_connections(20)
-			.connect(match &config.environment {
-				config::Environment::Development { database_url, .. } => database_url,
-				config::Environment::Production { database_url, .. } => database_url,
-			})
+			.connect(&config.database_url)
 			.await
 			.expect("Failed to connect to database.");
 
@@ -158,10 +150,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_id(&self, discord_id: u64) -> Option<database::User> {
-		let table_name = match &self.config().environment {
-			config::Environment::Development { users_table, .. } => users_table,
-			config::Environment::Production { users_table, .. } => users_table,
-		};
+		let table_name = &self.config().database_url;
 
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE discord_id = {discord_id}"
@@ -184,10 +173,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_name(&self, username: &str) -> Option<database::User> {
-		let table_name = match &self.config().environment {
-			config::Environment::Development { users_table, .. } => users_table,
-			config::Environment::Production { users_table, .. } => users_table,
-		};
+		let table_name = &self.config().database_url;
 
 		let mut query = QueryBuilder::new(format!("SELECT * FROM {table_name}"));
 		query
@@ -214,10 +200,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_steam_id(&self, steam_id: SteamID) -> Option<database::User> {
-		let table_name = match &self.config().environment {
-			config::Environment::Development { users_table, .. } => users_table,
-			config::Environment::Production { users_table, .. } => users_table,
-		};
+		let table_name = &self.config().database_url;
 
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE steam_id = {}",
@@ -241,10 +224,7 @@ impl StateContainer for Context<'_> {
 	}
 
 	async fn fetch_user_by_mode(&self, mode: Mode) -> Option<database::User> {
-		let table_name = match &self.config().environment {
-			config::Environment::Development { users_table, .. } => users_table,
-			config::Environment::Production { users_table, .. } => users_table,
-		};
+		let table_name = &self.config().database_url;
 
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE mode = {}",

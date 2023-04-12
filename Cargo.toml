@@ -91,6 +91,6 @@ version = "0.13"
 [dependencies.shuttle-service]
 version = "0.13"
 
-[dependencies.shuttle-static-folder]
+[dependencies.shuttle-secrets]
 version = "0.13"
 

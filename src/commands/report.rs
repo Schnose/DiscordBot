@@ -1,6 +1,5 @@
 use {
 	crate::{
-		config,
 		error::{Error, Result},
 		state::{Context, State, StateContainer},
 	},
@@ -37,10 +36,7 @@ pub async fn report(ctx: ApplicationContext<'_, State, Error>) -> Result<()> {
 	};
 
 	let ctx = Context::from(ctx);
-	let channel = ChannelId(match &ctx.config().environment {
-		config::Environment::Development { report_channel_id, .. }
-		| config::Environment::Production { report_channel_id, .. } => *report_channel_id,
-	});
+	let channel = ChannelId(ctx.config().report_channel_id);
 
 	channel
 		.send_message(&ctx.serenity_context().http, |message| {

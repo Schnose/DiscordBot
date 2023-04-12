@@ -1,6 +1,5 @@
 use {
 	crate::{
-		config,
 		error::{Error, Result},
 		state::{Context, StateContainer},
 	},
@@ -27,10 +26,7 @@ pub async fn setsteam(
 
 	let (name, id) = (&ctx.author().name, ctx.author_id());
 
-	let table_name = match &ctx.config().environment {
-		config::Environment::Development { users_table, .. }
-		| config::Environment::Production { users_table, .. } => users_table,
-	};
+	let table_name = &ctx.config().users_table;
 
 	let updated = match ctx.fetch_user_by_id(id).await {
 		// User already has a database entry -> modify the current one

@@ -1,58 +1,61 @@
-use {serde::Deserialize, std::collections::HashSet};
+use shuttle_secrets::SecretStore;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Config {
-	/// The environment the bot is currently running in. This will determine whether slash commands
-	/// are registered on a single guild or globally. It will also determine which Discord API Token
-	/// to use when authenticating, as well as which Database URL.
-	pub environment: Environment,
+	/// Discord API Token
+	pub discord_token: String,
+
+	/// PostgreSQL connection string
+	pub database_url: String,
+
+	/// PostgreSQL table name to store user information in
+	pub users_table: String,
+
+	/// `ChannelID` to send reports to
+	pub report_channel_id: u64,
+
+	/// `GuildID` for registering slash commands
+	pub guild_id: Option<u64>,
 
 	/// Steam WebAPI token
 	pub steam_token: String,
 
-	/// List of `UserID`s with special privileges
-	pub owners: HashSet<u64>,
+	/// `UserID` with special privileges
+	pub owner_id: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-#[serde(untagged)]
-pub enum Environment {
-	Development {
-		/// Discord API Token
-		discord_token: String,
-
-		/// PostgreSQL connection string
-		database_url: String,
-
-		/// PostgreSQL table name to store user information in
-		users_table: String,
-
-		/// `ChannelID` to send reports to
-		report_channel_id: u64,
-
-		/// `GuildID` for registering slash commands
-		guild_id: u64,
-	},
-	Production {
-		/// Discord API Token
-		discord_token: String,
-
-		/// PostgreSQL connection string
-		database_url: String,
-
-		/// PostgreSQL table name to store user information in
-		users_table: String,
-
-		/// `ChannelID` to send reports to
-		report_channel_id: u64,
-	},
-}
-
-impl std::fmt::Display for Environment {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.write_str(match self {
-			Environment::Development { .. } => "DEV",
-			Environment::Production { .. } => "PROD",
-		})
+impl Config {
+	pub fn new(secret_store: &SecretStore) -> Self {
+		Self {
+			discord_token: secret_store
+				.get("DISCORD_TOKEN")
+				.expect("Missing `DISCORD_TOKEN` secret."),
+			database_url: secret_store
+				.get("DATABASE_URL")
+				.expect("Missing `DATABASE_URL` secret."),
+			users_table: secret_store
+				.get("USERS_TABLE")
+				.expect("Missing `USERS_TABLE` secret."),
+			report_channel_id: secret_store
+				.get("REPORT_CHANNEL_ID")
+				.expect("Missing `REPORT_CHANNEL_ID` secret.")
+				.parse()
+				.expect("`REPORT_CHANNEL_ID` must be a u64."),
+			guild_id: secret_store
+				.get("GUILD_ID")
+				.map(|guild_id| {
+					guild_id
+						.parse()
+						.expect("`GUILD_ID` must be a u64.")
+				}),
+			steam_token: secret_store
+				.get("STEAM_TOKEN")
+				.expect("Missing `STEAM_TOKEN` secret."),
+			owner_id: secret_store
+				.get("OWNER_ID")
+				.expect("Missing `OWNER_ID` secret.")
+				.parse()
+				.expect("`OWNER_ID` must be a u64."),
+		}
 	}
 }

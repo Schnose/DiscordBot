@@ -27,7 +27,8 @@ use {
 		serenity_prelude::{GatewayIntents, GuildId},
 		Command, Framework, FrameworkOptions, PrefixFrameworkOptions,
 	},
-	std::path::PathBuf,
+	shuttle_secrets::SecretStore,
+	std::collections::HashSet,
 	tracing::info,
 };
 
@@ -42,31 +43,12 @@ mod target;
 mod utils;
 
 #[shuttle_runtime::main]
-async fn schnosebot(
-	#[shuttle_static_folder::StaticFolder(folder = "config")] config_folder: PathBuf,
-) -> ShuttleResult {
-	let config_path = config_folder.join(
-		std::env::var("SCHNOSE_DISCORD_BOT_CONFIG_DIR")
-			.unwrap_or_else(|_| String::from("config.toml")),
-	);
-
-	let config_file = std::fs::read_to_string(config_path).expect(
-		"Failed to read config file.
-		 Use `SCHNOSE_DISCORD_BOT_CONFIG_DIR` if you want to specify a custom location.",
-	);
-
-	let config: Config = toml::from_str(&config_file).expect("Failed to parse config file.");
-
+async fn schnosebot(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> ShuttleResult {
+	let config = Config::new(&secret_store);
 	let state = State::new(config).await;
 
 	let framework_options = FrameworkOptions {
-		owners: state
-			.config
-			.owners
-			.iter()
-			.copied()
-			.map(Into::into)
-			.collect(),
+		owners: HashSet::from_iter([state.config.owner_id.into()]),
 		prefix_options: PrefixFrameworkOptions { ignore_bots: true, ..Default::default() },
 		commands: vec![
 			commands::apistatus(),
@@ -98,11 +80,7 @@ async fn schnosebot(
 		..Default::default()
 	};
 
-	let token = match &state.config.environment {
-		config::Environment::Development { discord_token, .. } => discord_token,
-		config::Environment::Production { discord_token, .. } => discord_token,
-	}
-	.clone();
+	let token = state.config.discord_token.clone();
 
 	let intents = GatewayIntents::GUILDS
 		| GatewayIntents::GUILD_MEMBERS
@@ -118,24 +96,25 @@ async fn schnosebot(
 				Box::pin(async move {
 					let commands = &framework.options().commands;
 
-					match &state.config.environment {
-						config::Environment::Development { guild_id, .. } => {
-							let guild_id = GuildId(*guild_id);
+					match state.config.guild_id {
+						Some(guild_id) => {
+							let guild_id = GuildId(guild_id);
 							poise::builtins::register_in_guild(ctx, commands, guild_id)
 								.await
 								.expect("Failed to register commands for GuildID `{guild_id}`.");
 						}
-						config::Environment::Production { .. } => {
+						None => {
 							poise::builtins::register_globally(ctx, commands)
 								.await
 								.expect("Failed to register commands globally.");
 						}
-					};
+					}
 
 					for Command { name, .. } in commands {
 						info!(
 							"[{}] Successfully registered command `{}`.",
-							state.config.environment, name,
+							if state.config.guild_id.is_some() { "DEV" } else { "PROD" },
+							name,
 						);
 					}
 
