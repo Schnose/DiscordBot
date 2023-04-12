@@ -18,8 +18,8 @@ pub async fn paginate(ctx: &Context<'_>, embeds: Vec<CreateEmbed>) -> Result<()>
 			})
 			.components(|componends| {
 				componends.create_action_row(|row| {
-					row.create_button(|button| button.custom_id(&prev_id).label('ﰯ'))
-						.create_button(|button| button.custom_id(&next_id).label('ﰲ'))
+					row.create_button(|button| button.custom_id(&prev_id).label('◀'))
+						.create_button(|button| button.custom_id(&next_id).label('▶'))
 				})
 			})
 	})
