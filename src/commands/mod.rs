@@ -40,3 +40,6 @@ pub use pb::pb;
 
 mod ping;
 pub use ping::ping;
+
+mod profile;
+pub use profile::profile;
