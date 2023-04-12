@@ -20,5 +20,8 @@ pub use bwr::bwr;
 mod db;
 pub use db::db;
 
+mod invite;
+pub use invite::invite;
+
 mod ping;
 pub use ping::ping;
