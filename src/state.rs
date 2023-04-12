@@ -93,29 +93,10 @@ pub trait StateContainer {
 	fn maps(&self) -> &[GlobalMap];
 	fn map_names(&self) -> &[String];
 
-	async fn fetch_user_by_id(
-		&self,
-		discord_id: u64,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User>;
-
-	async fn fetch_user_by_name(
-		&self,
-		username: &str,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User>;
-
-	async fn fetch_user_by_steam_id(
-		&self,
-		steam_id: SteamID,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User>;
-
-	async fn fetch_user_by_mode(
-		&self,
-		mode: Mode,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User>;
+	async fn fetch_user_by_id(&self, discord_id: u64) -> Option<database::User>;
+	async fn fetch_user_by_name(&self, username: &str) -> Option<database::User>;
+	async fn fetch_user_by_steam_id(&self, steam_id: SteamID) -> Option<database::User>;
+	async fn fetch_user_by_mode(&self, mode: Mode) -> Option<database::User>;
 }
 
 #[async_trait]
@@ -152,11 +133,7 @@ impl StateContainer for Context<'_> {
 		&self.data().global_maps_names
 	}
 
-	async fn fetch_user_by_id(
-		&self,
-		discord_id: u64,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User> {
+	async fn fetch_user_by_id(&self, discord_id: u64) -> Option<database::User> {
 		let table_name = match &self.config().environment {
 			config::Environment::Development { users_table, .. } => users_table,
 			config::Environment::Production { users_table, .. } => users_table,
@@ -165,7 +142,7 @@ impl StateContainer for Context<'_> {
 		match sqlx::query_as::<_, database::UserRow>(&format!(
 			"SELECT * FROM {table_name} WHERE discord_id = {discord_id}"
 		))
-		.fetch_optional(database_connection)
+		.fetch_optional(self.db())
 		.await
 		{
 			Ok(row) => match row?.try_into() {
@@ -182,11 +159,7 @@ impl StateContainer for Context<'_> {
 		}
 	}
 
-	async fn fetch_user_by_name(
-		&self,
-		username: &str,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User> {
+	async fn fetch_user_by_name(&self, username: &str) -> Option<database::User> {
 		let table_name = match &self.config().environment {
 			config::Environment::Development { users_table, .. } => users_table,
 			config::Environment::Production { users_table, .. } => users_table,
@@ -199,7 +172,7 @@ impl StateContainer for Context<'_> {
 
 		match query
 			.build_query_as::<database::UserRow>()
-			.fetch_optional(database_connection)
+			.fetch_optional(self.db())
 			.await
 		{
 			Ok(row) => match row?.try_into() {
@@ -216,11 +189,7 @@ impl StateContainer for Context<'_> {
 		}
 	}
 
-	async fn fetch_user_by_steam_id(
-		&self,
-		steam_id: SteamID,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User> {
+	async fn fetch_user_by_steam_id(&self, steam_id: SteamID) -> Option<database::User> {
 		let table_name = match &self.config().environment {
 			config::Environment::Development { users_table, .. } => users_table,
 			config::Environment::Production { users_table, .. } => users_table,
@@ -230,7 +199,7 @@ impl StateContainer for Context<'_> {
 			"SELECT * FROM {table_name} WHERE steam_id = {}",
 			steam_id.as_id32()
 		))
-		.fetch_optional(database_connection)
+		.fetch_optional(self.db())
 		.await
 		{
 			Ok(row) => match row?.try_into() {
@@ -247,11 +216,7 @@ impl StateContainer for Context<'_> {
 		}
 	}
 
-	async fn fetch_user_by_mode(
-		&self,
-		mode: Mode,
-		database_connection: &Pool<Postgres>,
-	) -> Option<database::User> {
+	async fn fetch_user_by_mode(&self, mode: Mode) -> Option<database::User> {
 		let table_name = match &self.config().environment {
 			config::Environment::Development { users_table, .. } => users_table,
 			config::Environment::Production { users_table, .. } => users_table,
@@ -261,7 +226,7 @@ impl StateContainer for Context<'_> {
 			"SELECT * FROM {table_name} WHERE mode = {}",
 			mode as u8
 		))
-		.fetch_optional(database_connection)
+		.fetch_optional(self.db())
 		.await
 		{
 			Ok(row) => match row?.try_into() {

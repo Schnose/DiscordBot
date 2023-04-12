@@ -1,5 +1,5 @@
 use {
-	crate::state::State,
+	crate::{state::State, target::Target},
 	poise::FrameworkError,
 	std::num::TryFromIntError,
 	thiserror::Error,
@@ -28,6 +28,9 @@ pub enum Error {
 
 	#[error("{error}")]
 	GOKZ { error: gokz_rs::Error },
+
+	#[error("User `{user}` is not in the database.")]
+	UserNotInDatabase { user: Target },
 }
 
 impl Error {

@@ -38,6 +38,7 @@ mod error;
 mod event_handler;
 mod shuttle_integration;
 mod state;
+mod target;
 
 #[shuttle_runtime::main]
 async fn schnosebot() -> ShuttleResult {
@@ -63,7 +64,7 @@ async fn schnosebot() -> ShuttleResult {
 			.map(Into::into)
 			.collect(),
 		prefix_options: PrefixFrameworkOptions { ignore_bots: true, ..Default::default() },
-		commands: vec![commands::ping()],
+		commands: vec![commands::ping(), commands::db()],
 		event_handler: |ctx, event, framework_ctx, state| {
 			Box::pin(event_handler::handle(ctx, event, framework_ctx, state))
 		},
