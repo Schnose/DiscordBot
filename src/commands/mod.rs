@@ -46,3 +46,6 @@ pub use profile::profile;
 
 mod random;
 pub use random::random;
+
+mod recent;
+pub use recent::recent;

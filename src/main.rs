@@ -81,6 +81,7 @@ async fn schnosebot() -> ShuttleResult {
 			commands::ping(),
 			commands::profile(),
 			commands::random(),
+			commands::recent(),
 		],
 		event_handler: |ctx, event, framework_ctx, state| {
 			Box::pin(event_handler::handle(ctx, event, framework_ctx, state))
