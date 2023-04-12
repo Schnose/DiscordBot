@@ -42,10 +42,13 @@ mod target;
 mod utils;
 
 #[shuttle_runtime::main]
-async fn schnosebot() -> ShuttleResult {
-	let config_path: PathBuf = std::env::var("SCHNOSE_DISCORD_BOT_CONFIG_DIR")
-		.unwrap_or_else(|_| String::from("./config.toml"))
-		.into();
+async fn schnosebot(
+	#[shuttle_static_folder::StaticFolder(folder = "config")] config_folder: PathBuf,
+) -> ShuttleResult {
+	let config_path = config_folder.join(
+		std::env::var("SCHNOSE_DISCORD_BOT_CONFIG_DIR")
+			.unwrap_or_else(|_| String::from("config.toml")),
+	);
 
 	let config_file = std::fs::read_to_string(config_path).expect(
 		"Failed to read config file.
