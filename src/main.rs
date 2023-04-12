@@ -72,6 +72,7 @@ async fn schnosebot() -> ShuttleResult {
 			commands::btop(),
 			commands::bwr(),
 			commands::db(),
+			commands::help(),
 			commands::invite(),
 			commands::map(),
 			commands::maptop(),

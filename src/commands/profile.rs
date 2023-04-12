@@ -16,7 +16,7 @@ use {
 /// includes WR count, completion % and points. The data is fetched using the \
 /// [GlobalAPI](https://kztimerglobal.com/swagger/index.html?urls.primaryName=V2), \
 /// [n4vyn's](https://github.com/n4vyn) [KZ:GO API](https://kzgo.eu/) and my own \
-/// [SchnoseAPI](https://github.com/AlphaKeks/SchnoseAPI). If anything is slightly off, I'm sorry. \
+/// [SchnoseAPI](https://github.com/Schnose/SchnoseAPI). If anything is slightly off, I'm sorry. \
 /// Getting 100% accurate data for everything is difficult, but if you know how to improve it, \
 /// feel free to open a PR about it. You may specify the following parameters:
 ///

@@ -12,7 +12,7 @@ use {
 /// is a combination of the \
 /// [GlobalAPI](https://kztimerglobal.com/swagger/index.html?urls.primaryName=V2), \
 /// [n4vyn's](https://github.com/n4vyn) [KZ:GO API](https://kzgo.eu/) and my own \
-/// [SchnoseAPI](https://github.com/AlphaKeks/SchnoseAPI). If anything seems incorrect, feel free \
+/// [SchnoseAPI](https://github.com/Schnose/SchnoseAPI). If anything seems incorrect, feel free \
 /// to report it.
 #[tracing::instrument(skip(ctx), fields(user = ctx.author().tag()))]
 #[poise::command(slash_command, ephemeral, on_error = "Error::handle")]
