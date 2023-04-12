@@ -1,10 +1,13 @@
-# Run locally
+# Setup local environment
 dev:
   # Setup the database with docker
   docker-compose up -d
   sleep 2
   # Run migrations
   PGPASSWORD=postgres ./migrations/connect.example.sh < ./migrations/schemas_up.sql
+
+# Run locally
+run:
   # Run the bot
   cargo shuttle run --port 9000
 
