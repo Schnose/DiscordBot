@@ -9,3 +9,6 @@ pub use mode_choice::ModeChoice;
 
 mod db_mode_choice;
 pub use db_mode_choice::DBModeChoice;
+
+mod tier_choice;
+pub use tier_choice::TierChoice;
