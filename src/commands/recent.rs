@@ -65,7 +65,7 @@ pub async fn recent(
 					map.thumbnail(),
 				)
 			})
-			.unwrap_or_else(|| {
+			.unwrap_or_else(|_| {
 				(
 					record.map_name.clone(),
 					String::from("?"),

@@ -1,5 +1,10 @@
 use {
-	crate::{config::Config, database, error::Error, target::Target},
+	crate::{
+		config::Config,
+		database,
+		error::{Error, Result},
+		target::Target,
+	},
 	gokz_rs::{MapIdentifier, Mode, SteamID},
 	poise::async_trait,
 	schnosebot::global_map::GlobalMap,
@@ -85,7 +90,7 @@ pub trait StateContainer {
 	fn db(&self) -> &Pool<Postgres>;
 	fn maps(&self) -> &[GlobalMap];
 	fn map_names(&self) -> &[String];
-	fn get_map(&self, map_identifier: impl Into<MapIdentifier>) -> Option<GlobalMap>;
+	fn get_map(&self, map_identifier: impl Into<MapIdentifier>) -> Result<GlobalMap>;
 
 	fn author_id(&self) -> u64;
 
@@ -141,8 +146,10 @@ impl StateContainer for Context<'_> {
 		&self.data().global_maps_names
 	}
 
-	fn get_map(&self, map_identifier: impl Into<MapIdentifier>) -> Option<GlobalMap> {
-		GlobalMap::fuzzy_search(self.maps(), map_identifier)
+	fn get_map(&self, map_identifier: impl Into<MapIdentifier>) -> Result<GlobalMap> {
+		let map_identifier = map_identifier.into();
+		GlobalMap::fuzzy_search(self.maps(), map_identifier.clone())
+			.ok_or(Error::MapNotGlobal { input: map_identifier.to_string() })
 	}
 
 	fn author_id(&self) -> u64 {

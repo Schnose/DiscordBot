@@ -33,9 +33,7 @@ pub async fn wr(
 ) -> Result<()> {
 	ctx.defer().await?;
 
-	let map = ctx
-		.get_map(map_choice.clone())
-		.ok_or(Error::MapNotGlobal { input: map_choice })?;
+	let map = ctx.get_map(map_choice.clone())?;
 
 	let mode = match mode_choice {
 		Some(choice) => choice.into(),

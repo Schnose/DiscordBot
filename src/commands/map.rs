@@ -26,9 +26,7 @@ pub async fn map(
 ) -> Result<()> {
 	ctx.defer().await?;
 
-	let map = ctx
-		.get_map(map_choice.clone())
-		.ok_or(Error::MapNotGlobal { input: map_choice })?;
+	let map = ctx.get_map(map_choice.clone())?;
 
 	let mapper = match &map.mapper_steam_id {
 		None => map.mapper_name.clone(),
