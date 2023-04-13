@@ -121,7 +121,7 @@ pub async fn bpb(
 
 			(
 				format!("{time} {place} {teleports}"),
-				Some((pb.replay_download_link(), pb.replay_view_link())),
+				Some((pb.replay_view_link(), pb.replay_download_link())),
 			)
 		}
 	};
@@ -139,7 +139,7 @@ pub async fn bpb(
 
 			let time = time::format(pb.time);
 
-			(format!("{time} {place}"), Some((pb.replay_download_link(), pb.replay_view_link())))
+			(format!("{time} {place}"), Some((pb.replay_view_link(), pb.replay_download_link())))
 		}
 	};
 

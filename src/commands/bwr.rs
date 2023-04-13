@@ -75,7 +75,7 @@ pub async fn bwr(
 
 			(
 				format!("{time} {teleports}\n> by {player_name}"),
-				Some((wr.replay_download_link(), wr.replay_view_link())),
+				Some((wr.replay_view_link(), wr.replay_download_link())),
 			)
 		}
 	};
@@ -89,7 +89,7 @@ pub async fn bwr(
 
 			(
 				format!("{time} \n> by {player_name}"),
-				Some((wr.replay_download_link(), wr.replay_view_link())),
+				Some((wr.replay_view_link(), wr.replay_download_link())),
 			)
 		}
 	};
