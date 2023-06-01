@@ -14,6 +14,7 @@ publish = false
 # Utilities
 [dependencies.schnosebot]
 git = "https://github.com/Schnose/SchnoseBot"
+rev = "9520a34b8b3fe9b4d1b0bb50e300ebc83b95db3d"
 
 # Error handling
 [dependencies.thiserror]
@@ -39,6 +40,9 @@ version = "0.8"
 [dependencies.lazy_static]
 version = "1.4"
 
+[dependencies.itertools]
+version = "0.10.5"
+
 # JSON parsing
 [dependencies.serde]
 version = "1"
@@ -49,7 +53,7 @@ version = "1"
 
 # GOKZ
 [dependencies.gokz_rs]
-version = "0.18"
+version = "0.19"
 features = ["global_api", "kzgo_api", "schnose_api"]
 
 # Async

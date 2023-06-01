@@ -1,9 +1,13 @@
+use schnosebot::global_map::GlobalMap;
+use serenity::builder::CreateEmbed;
+
 use {
 	super::autocomplete,
 	crate::{
 		error::{Error, Result},
 		state::{Context, StateContainer},
 	},
+	itertools::Itertools,
 };
 
 /// Get detailed information on a map.
@@ -28,28 +32,40 @@ pub async fn map(
 
 	let map = ctx.get_map(map_choice.clone())?;
 
-	let mapper = match &map.mapper_steam_id {
-		None => map.mapper_name.clone(),
-		Some(steam_id) => format!(
-			"[{}](https://steamcommunity.com/profiles/{})",
-			map.mapper_name,
-			steam_id.as_id64()
-		),
-	};
+	ctx.send(|reply| reply.embed(|embed| build_map_embed(&ctx, embed, &map)))
+		.await?;
+
+	Ok(())
+}
+
+pub(super) fn build_map_embed<'e>(
+	ctx: &'_ Context<'_>,
+	embed: &'e mut CreateEmbed,
+	map: &'_ GlobalMap,
+) -> &'e mut CreateEmbed {
+	let mappers = map
+		.mappers
+		.iter()
+		.map(|mapper| {
+			format!(
+				"[{}](https://steamcommunity.com/profiles/{})",
+				mapper.name,
+				mapper.steam_id.as_id64()
+			)
+		})
+		.join(", ");
 
 	let kzt_filer = if map.kzt { "✅" } else { "❌" };
 	let skz_filer = if map.skz { "✅" } else { "❌" };
 	let vnl_filer = if map.vnl { "✅" } else { "❌" };
 
-	ctx.send(|reply| {
-		reply.embed(|embed| {
-			embed
-				.color(ctx.color())
-				.title(&map.name)
-				.url(&map.kzgo_link())
-				.thumbnail(&map.thumbnail())
-				.description(format!(
-					r#"
+	embed
+		.color(ctx.color())
+		.title(&map.name)
+		.url(&map.kzgo_link())
+		.thumbnail(&map.thumbnail())
+		.description(format!(
+			r#"
 🡆 Tier: {} ({})
 🡆 Mapper(s): {}
 🡆 Bonuses: {}
@@ -57,18 +73,13 @@ pub async fn map(
 
 🡆 Filters:
 					"#,
-					map.tier as u8,
-					map.tier,
-					mapper,
-					map.courses.len() - 1,
-					map.updated_on.format("%d/%m/%Y"),
-				))
-				.field("KZT", kzt_filer, true)
-				.field("SKZ", skz_filer, true)
-				.field("VNL", vnl_filer, true)
-		})
-	})
-	.await?;
-
-	Ok(())
+			map.tier as u8,
+			map.tier,
+			mappers,
+			map.courses.len() - 1,
+			map.updated_on.format("%d/%m/%Y"),
+		))
+		.field("KZT", kzt_filer, true)
+		.field("SKZ", skz_filer, true)
+		.field("VNL", vnl_filer, true)
 }

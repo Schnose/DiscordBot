@@ -68,8 +68,12 @@ pub async fn bwr(
 				n => format!("({n} TPs)"),
 			};
 
-			let player_name =
-				format!("[{}](https://kzgo.eu/players/{})", wr.player_name, wr.steam_id);
+			let player_name = format!(
+				"[{}](https://kzgo.eu/players/{}?{}=)",
+				wr.player_name,
+				wr.steam_id,
+				mode.short().to_lowercase()
+			);
 
 			(
 				format!("{time} {teleports}\n> by {player_name}"),
@@ -82,8 +86,12 @@ pub async fn bwr(
 		Err(_) => (String::from("😔"), None),
 		Ok(wr) => {
 			let time = time::format(wr.time);
-			let player_name =
-				format!("[{}](https://kzgo.eu/players/{})", wr.player_name, wr.steam_id);
+			let player_name = format!(
+				"[{}](https://kzgo.eu/players/{}?{}=)",
+				wr.player_name,
+				wr.steam_id,
+				mode.short().to_lowercase()
+			);
 
 			(
 				format!("{time} \n> by {player_name}"),

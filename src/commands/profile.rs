@@ -1,3 +1,6 @@
+//! Disabled until SchnoseAPI supports this again.
+
+/*
 use {
 	super::custom_params::ModeChoice,
 	crate::{
@@ -46,15 +49,6 @@ pub async fn profile(
 	mode_choice: Option<ModeChoice>,
 ) -> Result<()> {
 	ctx.defer().await?;
-
-	// let db_entry = ctx
-	// 	.find_user_by_id(*ctx.author().id.as_u64())
-	// 	.await;
-	//
-	// let mode = ModeChoice::parse_input(mode_choice, &db_entry)?;
-	// let player_identifier = Target::parse_input(target, db_entry, &ctx).await?;
-	//
-	// let player = schnose_api::get_player(player_identifier.clone(), ctx.gokz_client()).await?;
 
 	let target: Target = match target {
 		None => ctx.author_id().into(),
@@ -213,7 +207,7 @@ pub async fn profile(
 🏆 **PRO**: {}
 ──────────────────────────────────────────
 ```
-        [TP]                 [PRO]
+		[TP]                 [PRO]
   {}/{} ({:.2}%)      {}/{} ({:.2}%)
 T1 ⌠ {} ⌡        ⌠ {} ⌡
 T2 ⌠ {} ⌡        ⌠ {} ⌡
@@ -286,3 +280,4 @@ Preferred Mode: {}
 
 	Ok(())
 }
+*/

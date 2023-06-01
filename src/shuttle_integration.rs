@@ -19,10 +19,10 @@ impl SchnoseBot {
 #[async_trait]
 impl shuttle_service::Service for SchnoseBot {
 	async fn bind(self, _: SocketAddr) -> Result<(), shuttle_service::Error> {
-		self.framework
-			.run()
-			.await
-			.expect("Failed to run SchnoseBot.");
+		tokio::select! {
+			res = self.framework.run() => res
+		}
+		.expect("Failed to run SchnoseBot.");
 
 		Ok(())
 	}

@@ -1,3 +1,6 @@
+//! Disabled until SchnoseAPI supports this again.
+
+/*
 use {
 	super::pagination,
 	crate::{
@@ -150,3 +153,4 @@ pub async fn recent(
 
 	Ok(())
 }
+*/

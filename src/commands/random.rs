@@ -1,5 +1,5 @@
 use {
-	super::custom_params::TierChoice,
+	super::{custom_params::TierChoice, map::build_map_embed},
 	crate::{
 		error::{Error, Result},
 		state::{Context, StateContainer},
@@ -32,47 +32,8 @@ pub async fn random(
 
 	let map = filtered_maps.remove(rng);
 
-	let mapper = match &map.mapper_steam_id {
-		None => map.mapper_name.clone(),
-		Some(steam_id) => format!(
-			"[{}](https://steamcommunity.com/profiles/{})",
-			map.mapper_name,
-			steam_id.as_id64()
-		),
-	};
-
-	let kzt_filer = if map.kzt { "✅" } else { "❌" };
-	let skz_filer = if map.skz { "✅" } else { "❌" };
-	let vnl_filer = if map.vnl { "✅" } else { "❌" };
-
-	ctx.send(|reply| {
-		reply.embed(|embed| {
-			embed
-				.color(ctx.color())
-				.title(&map.name)
-				.url(&map.kzgo_link())
-				.thumbnail(&map.thumbnail())
-				.description(format!(
-					r#"
-🡆 Tier: {} ({})
-🡆 Mapper(s): {}
-🡆 Bonuses: {}
-🡆 Last Updated: {}
-
-🡆 Filters:
-					"#,
-					map.tier as u8,
-					map.tier,
-					mapper,
-					map.courses.len() - 1,
-					map.updated_on.format("%d/%m/%Y"),
-				))
-				.field("KZT", kzt_filer, true)
-				.field("SKZ", skz_filer, true)
-				.field("VNL", vnl_filer, true)
-		})
-	})
-	.await?;
+	ctx.send(|reply| reply.embed(|embed| build_map_embed(&ctx, embed, map)))
+		.await?;
 
 	Ok(())
 }

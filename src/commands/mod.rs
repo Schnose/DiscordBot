@@ -44,14 +44,14 @@ pub use pb::pb;
 mod ping;
 pub use ping::ping;
 
-mod profile;
-pub use profile::profile;
+// mod profile;
+// pub use profile::profile;
 
 mod random;
 pub use random::random;
 
-mod recent;
-pub use recent::recent;
+// mod recent;
+// pub use recent::recent;
 
 mod report;
 pub use report::report;
