@@ -1,0 +1,231 @@
+use crate::{err, info, trace, Context, Result};
+use poise::serenity_prelude::{ChannelId, Http, UserId};
+use schnosebot::global_map::GlobalMap;
+use shuttle_service::SecretStore;
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::OnceCell;
+
+/// The bot's global state. This hold configuration options, secrets, and other "global"
+/// information the bot should always have access to.
+#[allow(missing_debug_implementations)]
+pub struct GlobalState {
+	/// The bot's owner's Discord UserID
+	pub owner_id: UserId,
+
+	/// The channel to which the bot should send logs to
+	pub logs_channel: ChannelId,
+
+	/// The channel to which the bot should send reports to
+	pub reports_channel: ChannelId,
+
+	/// PostgreSQL database pool
+	pub database_pool: Pool<Postgres>,
+
+	/// Table name for user information
+	pub users_table: String,
+
+	/// Table name for logs
+	pub logs_table: String,
+
+	/// Default color for embeds
+	pub color: (u8, u8, u8),
+
+	/// Default icon for embeds
+	pub icon: String,
+
+	/// HTTP Context for Discord
+	pub http: Option<Arc<Http>>,
+
+	/// HTTP Client to make API requests
+	pub gokz_client: gokz_rs::Client,
+
+	/// A cache of all global KZ maps
+	pub global_maps: &'static HashMap<String, GlobalMap>,
+
+	/// A list of all global KZ map names, sorted alphabetically
+	pub global_map_names: &'static Vec<String>,
+}
+
+static GLOBAL_MAPS: OnceCell<HashMap<String, GlobalMap>> = OnceCell::const_new();
+static GLOBAL_MAP_NAMES: OnceCell<Vec<String>> = OnceCell::const_new();
+
+impl GlobalState {
+	/// Creates a new [`GlobalState`] instance.
+	#[tracing::instrument(skip(secret_store))]
+	pub async fn new(secret_store: &SecretStore) -> Result<Self> {
+		trace!("Setting up global state...");
+
+		let owner_id = secret_store
+			.get("OWNER_ID")
+			.ok_or(err!("Missing secret `OWNER_ID`"))?
+			.parse()
+			.map(UserId)
+			.map_err(|err| err!("Invalid `OWNER_ID`: {err:?}"))?;
+
+		trace!("Got `owner_id`");
+
+		let logs_channel = secret_store
+			.get("LOGS_CHANNEL_ID")
+			.ok_or(err!("Missing secret `LOGS_CHANNEL_ID`"))?
+			.parse()
+			.map(ChannelId)
+			.map_err(|err| err!("Invalid `LOGS_CHANNEL_ID`: {err:?}"))?;
+
+		trace!("Got `logs_channel`");
+
+		let reports_channel = secret_store
+			.get("REPORTS_CHANNEL_ID")
+			.ok_or(err!("Missing secret `REPORTS_CHANNEL_ID`"))?
+			.parse()
+			.map(ChannelId)
+			.map_err(|err| err!("Invalid `REPORTS_CHANNEL_ID`: {err:?}"))?;
+
+		trace!("Got `reports_channel`");
+
+		let database_url = secret_store
+			.get("DATABASE_URL")
+			.ok_or(err!("Missing secret `DATABASE_URL`"))?;
+
+		trace!("Got `database_url`");
+
+		let database_pool = PgPoolOptions::new()
+			.min_connections(10)
+			.max_connections(50)
+			.connect(&database_url)
+			.await?;
+
+		info!("Connected to database.");
+
+		let users_table = secret_store
+			.get("USERS_TABLE")
+			.ok_or(err!("Missing secret `USERS_TABLE`"))?;
+
+		trace!("Got `users_table`");
+
+		let logs_table = secret_store
+			.get("LOGS_TABLE")
+			.ok_or(err!("Missing secret `LOGS_TABLE`"))?;
+
+		trace!("Got `logs_table`");
+
+		let color = (116, 128, 194);
+		let icon = String::from("https://cdn.discordapp.com/attachments/981130651094900756/1068608508645347408/schnose.png");
+
+		let gokz_client = gokz_rs::Client::new();
+
+		trace!("Got gokz client");
+
+		let global_maps = GLOBAL_MAPS
+			.get_or_init(|| async {
+				schnosebot::global_map::GlobalMap::fetch(true, &gokz_client)
+					.await
+					.expect("Failed to fetch global maps.")
+					.into_iter()
+					.map(|map| (map.name.clone(), map))
+					.collect()
+			})
+			.await;
+
+		trace!("Got global maps");
+
+		let global_map_names = GLOBAL_MAP_NAMES
+			.get_or_init(|| async {
+				let mut global_map_names = global_maps
+					.iter()
+					.map(|(map_name, _)| map_name.clone())
+					.collect::<Vec<_>>();
+
+				global_map_names.sort();
+
+				global_map_names
+			})
+			.await;
+
+		trace!("Got global map names");
+		trace!("Done buildling global state.");
+
+		Ok(Self {
+			owner_id,
+			logs_channel,
+			reports_channel,
+			database_pool,
+			users_table,
+			logs_table,
+			color,
+			icon,
+			http: None,
+			gokz_client,
+			global_maps,
+			global_map_names,
+		})
+	}
+}
+
+/// Extension trait for [`poise::Context`] so I can call custom methods on it to access
+/// [`GlobalState`].
+#[allow(missing_docs)]
+pub trait State {
+	fn state(&self) -> &GlobalState;
+	fn owner(&self) -> UserId;
+	fn logs_channel(&self) -> ChannelId;
+	fn db(&self) -> &Pool<Postgres>;
+	fn logs_table(&self) -> &str;
+	fn color(&self) -> (u8, u8, u8);
+	fn icon(&self) -> &String;
+	fn http(&self) -> &Http;
+	fn global_maps(&self) -> &'static HashMap<String, GlobalMap>;
+	fn global_map_names(&self) -> &'static Vec<String>;
+	fn gokz_client(&self) -> &gokz_rs::Client;
+}
+
+impl State for Context<'_> {
+	fn state(&self) -> &GlobalState {
+		self.framework().user_data
+	}
+
+	fn owner(&self) -> UserId {
+		self.framework().user_data.owner_id
+	}
+
+	fn logs_channel(&self) -> ChannelId {
+		self.framework().user_data.logs_channel
+	}
+
+	fn logs_table(&self) -> &str {
+		self.framework()
+			.user_data
+			.logs_table
+			.as_str()
+	}
+
+	fn db(&self) -> &Pool<Postgres> {
+		&self.framework().user_data.database_pool
+	}
+
+	fn color(&self) -> (u8, u8, u8) {
+		self.framework().user_data.color
+	}
+
+	fn icon(&self) -> &String {
+		&self.framework().user_data.icon
+	}
+
+	fn global_maps(&self) -> &'static HashMap<String, GlobalMap> {
+		self.framework().user_data.global_maps
+	}
+
+	fn http(&self) -> &Http {
+		&self.serenity_context().http
+	}
+
+	fn global_map_names(&self) -> &'static Vec<String> {
+		self.framework()
+			.user_data
+			.global_map_names
+	}
+
+	fn gokz_client(&self) -> &gokz_rs::Client {
+		&self.framework().user_data.gokz_client
+	}
+}

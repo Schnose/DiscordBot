@@ -1,6 +1,6 @@
 [package]
 name = "schnose-discord-bot"
-version = "1.0.0"
+version = "2.0.0"
 authors = ["AlphaKeks <alphakeks@dawn.sh>"]
 edition = "2021"
 description = "Discord Bot for CS:GO KZ using serenity.rs and poise"
@@ -11,87 +11,19 @@ repository = "https://github.com/Schnose/DiscordBot"
 license-file = "./LICENSE"
 publish = false
 
-# Utilities
-[dependencies.schnosebot]
-git = "https://github.com/Schnose/SchnoseBot"
-rev = "9520a34b8b3fe9b4d1b0bb50e300ebc83b95db3d"
+[dependencies]
+schnosebot = { git = "https://github.com/Schnose/SchnoseBot", rev = "9520a34b8b3fe9b4d1b0bb50e300ebc83b95db3d" }
+thiserror = "1.0.40"
 
-# Error handling
-[dependencies.thiserror]
-version = "1"
+tokio = { version = "1.28.2", features = ["full"] }
+sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "postgres", "all-types"] }
+poise = "0.5.5"
 
-# Logging
-[dependencies.tracing]
-version = "0.1"
+gokz_rs = { version = "0.19.2", features = ["global_api", "kzgo_api", "schnose_api"] }
+serde = { version = "1.0.163", features = ["derive"] }
+serde_json = "1.0.96"
 
-# Utilities
-[dependencies.chrono]
-version = "0.4"
-
-[dependencies.regex]
-version = "1.7"
-
-[dependencies.num-format]
-version = "0.4"
-
-[dependencies.rand]
-version = "0.8"
-
-[dependencies.lazy_static]
-version = "1.4"
-
-[dependencies.itertools]
-version = "0.10.5"
-
-# JSON parsing
-[dependencies.serde]
-version = "1"
-features = ["derive"]
-
-[dependencies.serde_json]
-version = "1"
-
-# GOKZ
-[dependencies.gokz_rs]
-version = "0.19"
-features = ["global_api", "kzgo_api", "schnose_api"]
-
-# Async
-[dependencies.tokio]
-version = "1"
-features = ["full"]
-
-[dependencies.futures]
-version = "0.3"
-
-# SQL
-[dependencies.sqlx]
-version = "0.6"
-features = ["runtime-tokio-rustls", "postgres"]
-
-# Discord
-[dependencies.serenity]
-version = "0.11"
-default_features = false
-features = [
-	"builder",
-	"cache",
-	"client",
-	"gateway",
-	"model",
-	"rustls_backend",
-]
-
-[dependencies.poise]
-version = "0.5"
-
-# shuttle.rs
-[dependencies.shuttle-runtime]
-version = "0.14"
-
-[dependencies.shuttle-service]
-version = "0.14"
-
-[dependencies.shuttle-secrets]
-version = "0.14"
-
+shuttle-runtime = "0.18.0"
+shuttle-secrets = "0.18.0"
+shuttle-service = "0.18.0"
+tracing = "0.1.37"
