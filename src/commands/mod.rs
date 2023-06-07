@@ -17,3 +17,6 @@ pub use mode::mode;
 
 mod help;
 pub use help::help;
+
+mod apistatus;
+pub use apistatus::apistatus;

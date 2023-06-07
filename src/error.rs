@@ -64,6 +64,10 @@ pub enum Error {
 		/// The upper bound
 		max: u64,
 	},
+
+	/// An error from [`gokz_rs`]
+	#[error("{0}")]
+	GOKZ(gokz_rs::Error),
 }
 
 impl Error {
@@ -176,5 +180,11 @@ impl From<poise::serenity_prelude::SerenityError> for Error {
 		}
 
 		Self::Custom(err.to_string())
+	}
+}
+
+impl From<gokz_rs::Error> for Error {
+	fn from(err: gokz_rs::Error) -> Self {
+		Self::GOKZ(err)
 	}
 }
