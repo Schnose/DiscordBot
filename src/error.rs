@@ -74,9 +74,9 @@ impl Error {
 	/// Global error handler for slash commands
 	pub async fn global_handler(error: FrameworkError<'_, crate::GlobalState, Error>) {
 		if let Some(ctx) = error.ctx() {
-			error!(ctx.state(), "Received error.");
+			error!(ctx.state(), "Received error: {error:?}");
 		} else {
-			error!("Received error.");
+			error!("Received error: {error:?}");
 		}
 
 		match error {

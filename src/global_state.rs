@@ -6,12 +6,12 @@ use poise::{
 use schnosebot::global_map::GlobalMap;
 use shuttle_service::SecretStore;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres, QueryBuilder};
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 use tokio::sync::OnceCell;
 
 /// The bot's global state. This hold configuration options, secrets, and other "global"
 /// information the bot should always have access to.
-#[allow(missing_debug_implementations)]
+#[derive(Debug)]
 pub struct GlobalState {
 	/// The bot's owner's Discord UserID
 	pub owner_id: UserId,
@@ -44,14 +44,11 @@ pub struct GlobalState {
 	pub gokz_client: gokz_rs::Client,
 
 	/// A cache of all global KZ maps
-	pub global_maps: &'static HashMap<String, GlobalMap>,
-
-	/// A list of all global KZ map names, sorted alphabetically
-	pub global_map_names: &'static Vec<String>,
+	pub global_maps: &'static Vec<GlobalMap>,
 }
 
-static GLOBAL_MAPS: OnceCell<HashMap<String, GlobalMap>> = OnceCell::const_new();
-static GLOBAL_MAP_NAMES: OnceCell<Vec<String>> = OnceCell::const_new();
+/// Global cache of all global KZ maps
+pub static GLOBAL_MAPS: OnceCell<Vec<GlobalMap>> = OnceCell::const_new();
 
 impl GlobalState {
 	/// Creates a new [`GlobalState`] instance.
@@ -124,29 +121,10 @@ impl GlobalState {
 				schnosebot::global_map::GlobalMap::fetch(true, &gokz_client)
 					.await
 					.expect("Failed to fetch global maps.")
-					.into_iter()
-					.map(|map| (map.name.clone(), map))
-					.collect()
 			})
 			.await;
 
 		trace!("Got global maps");
-
-		let global_map_names = GLOBAL_MAP_NAMES
-			.get_or_init(|| async {
-				let mut global_map_names = global_maps
-					.iter()
-					.map(|(map_name, _)| map_name.clone())
-					.collect::<Vec<_>>();
-
-				global_map_names.sort();
-
-				global_map_names
-			})
-			.await;
-
-		trace!("Got global map names");
-		trace!("Done buildling global state.");
 
 		Ok(Self {
 			owner_id,
@@ -160,7 +138,6 @@ impl GlobalState {
 			http: None,
 			gokz_client,
 			global_maps,
-			global_map_names,
 		})
 	}
 }
@@ -190,8 +167,7 @@ pub trait State {
 	fn footer<'f>(&'_ self, footer: &'f mut CreateEmbedFooter) -> &'f mut CreateEmbedFooter;
 
 	fn http(&self) -> &Http;
-	fn global_maps(&self) -> &'static HashMap<String, GlobalMap>;
-	fn global_map_names(&self) -> &'static Vec<String>;
+	fn global_maps(&self) -> &'static Vec<GlobalMap>;
 	fn gokz_client(&self) -> &gokz_rs::Client;
 
 	/// Fetches a single user from the database
@@ -251,18 +227,12 @@ impl State for Context<'_> {
 			.text(self.schnose())
 	}
 
-	fn global_maps(&self) -> &'static HashMap<String, GlobalMap> {
+	fn global_maps(&self) -> &'static Vec<GlobalMap> {
 		self.framework().user_data.global_maps
 	}
 
 	fn http(&self) -> &Http {
 		&self.serenity_context().http
-	}
-
-	fn global_map_names(&self) -> &'static Vec<String> {
-		self.framework()
-			.user_data
-			.global_map_names
 	}
 
 	fn gokz_client(&self) -> &gokz_rs::Client {

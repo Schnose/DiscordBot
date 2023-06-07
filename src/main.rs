@@ -101,6 +101,7 @@ async fn discord_bot(
 				commands::mode(),
 				commands::help(),
 				commands::apistatus(),
+				commands::map(),
 			],
 			..Default::default()
 		})
