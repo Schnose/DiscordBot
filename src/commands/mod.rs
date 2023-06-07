@@ -4,6 +4,9 @@ pub use ping::ping;
 mod db;
 pub use db::db;
 
+mod setsteam;
+pub use setsteam::setsteam;
+
 mod params {
 	use poise::ChoiceParameter;
 	use std::ops::Deref;

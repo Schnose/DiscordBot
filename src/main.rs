@@ -93,7 +93,7 @@ async fn discord_bot(
 					EventHandler::handle(ctx, event, framework_ctx, global_state).await
 				})
 			},
-			commands: vec![commands::ping(), commands::db()],
+			commands: vec![commands::ping(), commands::db(), commands::setsteam()],
 			..Default::default()
 		})
 		.setup(|ctx, _ready, framework| {
@@ -111,9 +111,16 @@ async fn discord_bot(
 
 				poise::builtins::register_in_guild(&ctx.http, commands, guild_id).await?;
 
+				let mut message = String::from("Registering commands:");
+
 				for Command { name, .. } in commands {
-					info!(&global_state, "Registering command: `{name}`");
+					use std::fmt::Write;
+
+					write!(&mut message, "\n- `/{name}`")
+						.expect("Failed to append command to message");
 				}
+
+				info!(&global_state, "{message}");
 
 				Ok(global_state)
 			})
