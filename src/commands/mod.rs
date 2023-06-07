@@ -11,3 +11,6 @@ pub use setsteam::setsteam;
 
 mod mode;
 pub use mode::mode;
+
+mod help;
+pub use help::help;

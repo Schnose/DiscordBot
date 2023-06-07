@@ -98,6 +98,7 @@ async fn discord_bot(
 				commands::db(),
 				commands::setsteam(),
 				commands::mode(),
+				commands::help(),
 			],
 			..Default::default()
 		})

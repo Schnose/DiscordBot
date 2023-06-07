@@ -116,11 +116,10 @@ macro_rules! log {
 				let color: (u8, u8, u8) = level.into();
 
 				// TODO: Log arguments to command?
-				// I don't know where I could get that info, but it would be nice
-				// to include.
+				// I don't know where I could get that info, but it would be nice to include.
 				message.embed(|embed| {
 					embed.color(color)
-						.title(format!("[{level}]"))
+						.title(level.to_string())
 						.description(content)
 						.footer(|f| f.text(date.to_string()))
 				})
