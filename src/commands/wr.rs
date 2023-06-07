@@ -26,8 +26,12 @@ pub async fn wr(
 	let tp_wr = global_api::get_wr(map.id.into(), mode, true, 0, ctx.gokz_client()).await;
 	let pro_wr = global_api::get_wr(map.id.into(), mode, false, 0, ctx.gokz_client()).await;
 
+	if tp_wr.is_err() && pro_wr.is_err() {
+		return Err(Error::NoRecords);
+	}
+
 	let ((tp_time, tp_links), (pro_time, pro_links)) =
-		crate::global_api::parse_records(tp_wr, pro_wr);
+		crate::global_api::parse_records(&tp_wr, &pro_wr);
 
 	let title = format!("[WR] {}", map.name);
 	let url = format!("{}?{}=", map.kzgo_link(), mode.short().to_lowercase());

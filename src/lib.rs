@@ -27,7 +27,7 @@ pub mod logging;
 /// The bot's global state. This hold configuration options, secrets, and other "global"
 /// information the bot should always have access to.
 mod global_state;
-pub use global_state::{GlobalState, State, GLOBAL_MAPS};
+pub use global_state::{GlobalState, State, DATABASE_POOL, GLOBAL_MAPS};
 
 /// Type alias for convenience.
 pub type Context<'ctx> = poise::Context<'ctx, GlobalState, Error>;

@@ -1,12 +1,12 @@
-use gokz_rs::global_api;
+use gokz_rs::{global_api, Mode, SteamID};
 
 type Record = Result<global_api::Record, gokz_rs::Error>;
 type Links = (Option<String>, Option<String>);
 
 /// Takes two records and formats them into embed descriptions and replay links
 pub fn parse_records(
-	tp: Record,
-	pro: Record,
+	tp: &Record,
+	pro: &Record,
 ) -> ((String, Option<Links>), (String, Option<Links>)) {
 	let tp = parse_record(tp);
 	let pro = parse_record(pro);
@@ -14,7 +14,7 @@ pub fn parse_records(
 }
 
 /// Takes a record and formats it into an embed description and replay links
-pub fn parse_record(rec: Record) -> (String, Option<Links>) {
+pub fn parse_record(rec: &Record) -> (String, Option<Links>) {
 	match rec {
 		Err(_) => (String::from("😔"), None),
 		Ok(rec) => {
@@ -62,4 +62,24 @@ pub fn format_replay_links(tp: Option<Links>, pro: Option<Links>) -> Option<Stri
 			None
 		}
 	}
+}
+
+/// Parses player profile links out of records for an embed description
+pub fn get_player_info(tp: Record, pro: Record) -> Option<String> {
+	let format = |steam_id: SteamID, mode: Mode| {
+		format!(
+			"Player: [KZ:GO](https://kzgo.eu/players/{steam_id}?{mode}=) | [Steam](https://steamcommunity.com/profiles/{id64})",
+			steam_id = steam_id,
+			mode = mode.short().to_lowercase(),
+			id64 = steam_id.as_id64(),
+		)
+	};
+
+	if let Ok(rec) = tp {
+		return Some(format(rec.steam_id, rec.mode));
+	} else if let Ok(rec) = pro {
+		return Some(format(rec.steam_id, rec.mode));
+	}
+
+	None
 }

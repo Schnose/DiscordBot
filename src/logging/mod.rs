@@ -73,7 +73,7 @@ macro_rules! log {
 					.push_bind(content);
 			});
 
-			if let Err(err) = query.build().execute(&$state.database_pool).await {
+			if let Err(err) = query.build().execute(&*$state.database_pool).await {
 				::tracing::error!("Failed to save logs to database.\n\t{err:?}");
 				break 'log;
 			}

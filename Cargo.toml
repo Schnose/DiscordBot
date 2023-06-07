@@ -14,17 +14,19 @@ publish = false
 [dependencies]
 schnosebot = { git = "https://github.com/Schnose/SchnoseBot", rev = "9520a34b8b3fe9b4d1b0bb50e300ebc83b95db3d" }
 thiserror = "1.0.40"
+tracing = "0.1.37"
 
 tokio = { version = "1.28.2", features = ["full"] }
+futures = "0.3.28"
 sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "postgres", "all-types"] }
 poise = "0.5.5"
 
 gokz_rs = { version = "0.19.2", features = ["global_api", "kzgo_api", "schnose_api"] }
 serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.96"
+lazy_static = "1.4.0"
+regex = "1.8.4"
 
 shuttle-runtime = "0.18.0"
 shuttle-secrets = "0.18.0"
 shuttle-service = "0.18.0"
-tracing = "0.1.37"
-futures = "0.3.28"

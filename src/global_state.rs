@@ -23,7 +23,7 @@ pub struct GlobalState {
 	pub reports_channel: ChannelId,
 
 	/// PostgreSQL database pool
-	pub database_pool: Pool<Postgres>,
+	pub database_pool: Arc<Pool<Postgres>>,
 
 	/// Table name for user information
 	pub users_table: String,
@@ -49,6 +49,9 @@ pub struct GlobalState {
 
 /// Global cache of all global KZ maps
 pub static GLOBAL_MAPS: OnceCell<Vec<GlobalMap>> = OnceCell::const_new();
+
+/// Global database pool
+pub static DATABASE_POOL: OnceCell<Arc<Pool<Postgres>>> = OnceCell::const_new();
 
 impl GlobalState {
 	/// Creates a new [`GlobalState`] instance.
@@ -94,6 +97,12 @@ impl GlobalState {
 			.max_connections(50)
 			.connect(&database_url)
 			.await?;
+
+		let database_pool = Arc::clone(
+			DATABASE_POOL
+				.get_or_init(|| async { Arc::new(database_pool) })
+				.await,
+		);
 
 		info!("Connected to database.");
 

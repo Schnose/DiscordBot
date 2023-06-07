@@ -70,8 +70,14 @@ pub enum Error {
 	GOKZ(gokz_rs::Error),
 
 	/// The user did not specify a mode and also does not have a preference saved in the database
-	#[error("You did not specify a `mode` and also don't have a preference set. Either specify one, or use `/mode` to save a fallback preference.")]
+	#[error(
+		"You did not specify a `mode` and also don't have a preference set. Either specify one, or use `/mode` to save a fallback preference."
+	)]
 	NoMode,
+
+	/// No records have been found for a query
+	#[error("No records found.")]
+	NoRecords,
 }
 
 impl Error {
@@ -88,17 +94,21 @@ impl Error {
 		match error {
 			FrameworkError::Setup { error, framework, .. } => {
 				let state = framework.user_data().await;
-				error!(state, "## Failed to setup.\n```\n{error:?}\n```");
+				error!(state, "## Failed to setup.\n```\n{error}\n\n{error:?}\n```");
 			}
 
 			FrameworkError::EventHandler { error, framework, .. } => {
 				let state = framework.user_data().await;
-				error!(state, "## Failed to handle event.\n```\n{error:?}\n```");
+				error!(state, "## Failed to handle event.\n```\n{error}\n\n{error:?}\n```");
 			}
 
 			FrameworkError::Command { error, ctx } => {
 				let state = ctx.state();
-				warn!(state, "## Failed to handle command.\n```\n{error:?}\n```");
+				warn!(state, "## Failed to handle command.\n```\n{error}\n\n{error:?}\n```");
+
+				if let Err(err) = ctx.say(error.to_string()).await {
+					error!("Failed to reply to user.\n```\n{err:?}\n```");
+				}
 			}
 
 			FrameworkError::CommandPanic { payload, ctx } => {
@@ -117,7 +127,7 @@ impl Error {
 				let state = ctx.state();
 				warn!(
 					state,
-					"## Failed to parse arguments.\n\n### Error:\n```\n{error:?}\n```\n### Input:\n```\n{input:?}\n```"
+					"## Failed to parse arguments.\n\n### Error:\n```\n{error}\n\n{error:?}\n```\n### Input:\n```\n{input:?}\n```"
 				);
 
 				if let Err(err) = ctx.say(error.to_string()).await {
