@@ -1,8 +1,11 @@
-use crate::{err, info, trace, Context, Result};
-use poise::serenity_prelude::{ChannelId, Http, UserId};
+use crate::{database, err, info, trace, Context, Result};
+use poise::{
+	async_trait,
+	serenity_prelude::{ChannelId, CreateEmbedFooter, Http, UserId},
+};
 use schnosebot::global_map::GlobalMap;
 use shuttle_service::SecretStore;
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres, QueryBuilder};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::OnceCell;
 
@@ -165,20 +168,40 @@ impl GlobalState {
 /// Extension trait for [`poise::Context`] so I can call custom methods on it to access
 /// [`GlobalState`].
 #[allow(missing_docs)]
+#[async_trait]
 pub trait State {
 	fn state(&self) -> &GlobalState;
 	fn owner(&self) -> UserId;
 	fn logs_channel(&self) -> ChannelId;
 	fn db(&self) -> &Pool<Postgres>;
 	fn logs_table(&self) -> &str;
+	fn users_table(&self) -> &str;
+
+	/// Get the default color used for embeds
 	fn color(&self) -> (u8, u8, u8);
+
+	/// (͡ ͡° ͜ つ ͡͡°)
 	fn icon(&self) -> &String;
+
+	/// (͡ ͡° ͜ つ ͡͡°)
+	fn schnose(&self) -> &'static str;
+
+	/// Get the default footer used for embeds
+	fn footer<'f>(&'_ self, footer: &'f mut CreateEmbedFooter) -> &'f mut CreateEmbedFooter;
+
 	fn http(&self) -> &Http;
 	fn global_maps(&self) -> &'static HashMap<String, GlobalMap>;
 	fn global_map_names(&self) -> &'static Vec<String>;
 	fn gokz_client(&self) -> &gokz_rs::Client;
+
+	/// Fetches a single user from the database
+	async fn get_user_by_id(
+		&self,
+		user_id: impl Into<u64> + Send,
+	) -> Result<Option<database::User>>;
 }
 
+#[async_trait]
 impl State for Context<'_> {
 	fn state(&self) -> &GlobalState {
 		self.framework().user_data
@@ -199,6 +222,13 @@ impl State for Context<'_> {
 			.as_str()
 	}
 
+	fn users_table(&self) -> &str {
+		self.framework()
+			.user_data
+			.users_table
+			.as_str()
+	}
+
 	fn db(&self) -> &Pool<Postgres> {
 		&self.framework().user_data.database_pool
 	}
@@ -209,6 +239,16 @@ impl State for Context<'_> {
 
 	fn icon(&self) -> &String {
 		&self.framework().user_data.icon
+	}
+
+	fn schnose(&self) -> &'static str {
+		"(͡ ͡° ͜ つ ͡͡°)"
+	}
+
+	fn footer<'f>(&'_ self, footer: &'f mut CreateEmbedFooter) -> &'f mut CreateEmbedFooter {
+		footer
+			.icon_url(self.icon())
+			.text(self.schnose())
 	}
 
 	fn global_maps(&self) -> &'static HashMap<String, GlobalMap> {
@@ -227,5 +267,28 @@ impl State for Context<'_> {
 
 	fn gokz_client(&self) -> &gokz_rs::Client {
 		&self.framework().user_data.gokz_client
+	}
+
+	async fn get_user_by_id(
+		&self,
+		user_id: impl Into<u64> + Send,
+	) -> Result<Option<database::User>> {
+		let mut query = QueryBuilder::new("SELECT * FROM ");
+
+		query
+			.push(self.users_table())
+			.push(" WHERE discord_id = ")
+			.push_bind(user_id.into() as i64);
+
+		let Some(user) = query
+			.build_query_as::<database::UserRow>()
+			.fetch_optional(self.db())
+			.await? else {
+			return Ok(None);
+		};
+
+		let user = database::User::from_row(user, self).await?;
+
+		Ok(Some(user))
 	}
 }

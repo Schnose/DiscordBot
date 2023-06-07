@@ -1,3 +1,9 @@
+//! See `lib.rs`
+
+#![warn(missing_debug_implementations, missing_docs, rust_2018_idioms)]
+#![warn(clippy::style, clippy::complexity)]
+#![deny(clippy::perf, clippy::correctness)]
+
 mod commands;
 mod events;
 
@@ -87,7 +93,7 @@ async fn discord_bot(
 					EventHandler::handle(ctx, event, framework_ctx, global_state).await
 				})
 			},
-			commands: vec![commands::ping()],
+			commands: vec![commands::ping(), commands::db()],
 			..Default::default()
 		})
 		.setup(|ctx, _ready, framework| {

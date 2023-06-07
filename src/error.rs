@@ -50,7 +50,7 @@ pub enum Error {
 
 	/// A log has an invalid level
 	#[error("Invalid Log level `{0}` found. Please report this.")]
-	InvalidLogLevel(i8),
+	InvalidLogLevel(i16),
 
 	/// A user submitted a parameter that was out of bounds
 	#[error("The value `{value}` for `{param}` is out of bounds. Please submit a value that is at least `{min}` and at max `{max}`.")]
@@ -78,22 +78,22 @@ impl Error {
 		match error {
 			FrameworkError::Setup { error, framework, .. } => {
 				let state = framework.user_data().await;
-				error!(state, "Failed to setup.\n\t{error:?}");
+				error!(state, "Failed to setup.\n```\n{error:?}\n```");
 			}
 
 			FrameworkError::EventHandler { error, framework, .. } => {
 				let state = framework.user_data().await;
-				error!(state, "Failed to handle event.\n\t{error:?}");
+				error!(state, "Failed to handle event.\n```\n{error:?}\n```");
 			}
 
 			FrameworkError::Command { error, ctx } => {
 				let state = ctx.state();
-				error!(state, "Failed to handle command.\n\t{error:?}");
+				error!(state, "Failed to handle command.\n```\n{error:?}\n```");
 			}
 
 			FrameworkError::CommandPanic { payload, ctx } => {
 				let state = ctx.state();
-				error!(state, "Panicked during command execution.\n\t{payload:?}");
+				error!(state, "Panicked during command execution.\n```\n{payload:?}\n```");
 
 				if let Err(err) = ctx
 					.send(|reply| {
@@ -101,24 +101,27 @@ impl Error {
 					})
 					.await
 				{
-					error!("Failed to reply to user.\n\t{err:?}");
+					error!("Failed to reply to user.\n```\n{err:?}\n```");
 				}
 			}
 
 			FrameworkError::ArgumentParse { error, input, ctx } => {
 				let state = ctx.state();
-				warn!(state, "Failed to parse arguments.\n\t{error:?}\n\t{input:?}");
+				warn!(state, "Failed to parse arguments.\n```\n{error:?}\n\t{input:?}\n```");
 			}
 
 			FrameworkError::MissingBotPermissions { missing_permissions, ctx } => {
 				let state = ctx.state();
-				warn!(state, "Bot has insufficcient permissions.\n\t{missing_permissions:?}");
+				warn!(
+					state,
+					"Bot has insufficcient permissions.\n```\n{missing_permissions:?}\n```"
+				);
 
 				if let Err(err) = ctx
 					.send(|reply| reply.content("Missing permissions <:PogO:824260850701434891>"))
 					.await
 				{
-					error!("Failed to reply to user.\n\t{err:?}");
+					error!("Failed to reply to user.\n```\n{err:?}\n```");
 				}
 			}
 
@@ -127,7 +130,7 @@ impl Error {
 					.send(|reply| reply.content("You don't have permissions to use this command."))
 					.await
 				{
-					error!("Failed to reply to user.\n\t{err:?}");
+					error!("Failed to reply to user.\n```\n{err:?}\n```");
 				}
 			}
 
@@ -136,15 +139,15 @@ impl Error {
 					.send(|reply| reply.content("This command only works in servers."))
 					.await
 				{
-					error!("Failed to reply to user.\n\t{err:?}");
+					error!("Failed to reply to user.\n```\n{err:?}\n```");
 				}
 			}
 
 			error => {
 				if let Some(ctx) = error.ctx() {
-					error!(ctx.state(), "Received error.\n\t{error}");
+					error!(ctx.state(), "Received error.\n```\n{error}\n```");
 				} else {
-					error!("Received error.\n\t{error}");
+					error!("Received error.\n```\n{error}\n```");
 				}
 			}
 		};
