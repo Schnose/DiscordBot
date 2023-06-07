@@ -3,18 +3,18 @@ use std::ops::Deref;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ChoiceParameter)]
 pub enum Bool {
-	#[name = "No"]
-	No = 0,
-
 	#[name = "Yes"]
 	Yes = 1,
+
+	#[name = "No"]
+	No = 0,
 }
 
 impl From<bool> for Bool {
 	fn from(b: bool) -> Self {
 		match b {
-			false => Self::No,
 			true => Self::Yes,
+			false => Self::No,
 		}
 	}
 }
@@ -29,8 +29,8 @@ impl Deref for Bool {
 	type Target = bool;
 	fn deref(&self) -> &Self::Target {
 		match self {
-			Bool::No => &false,
 			Bool::Yes => &true,
+			Bool::No => &false,
 		}
 	}
 }

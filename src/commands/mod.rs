@@ -27,10 +27,10 @@ mod map;
 pub use map::map;
 
 mod wr;
-pub use wr::wr;
+pub use wr::{bwr, wr};
 
 mod pb;
-pub use pb::pb;
+pub use pb::{bpb, pb};
 
 mod maptop;
-pub use maptop::maptop;
+pub use maptop::{bmaptop, maptop};

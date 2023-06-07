@@ -29,10 +29,63 @@ pub async fn maptop(
 ) -> Result<()> {
 	ctx.defer().await?;
 
+	let course = 0;
+	_maptop(ctx, map, mode, runtype, course).await?;
+
+	Ok(())
+}
+
+/// Top 100 records on a bonus.
+///
+/// This command will fetch the top 100 (or less, if there are less than 100 completions) records \
+/// on a particular bonus. You are required to specify a `map` and may also specify the \
+/// following options:
+///
+/// - `mode`: `KZTimer` / `SimpleKZ` / `Vanilla`
+///   - If you don't specify this, the bot will search the database for your UserID. If it can't \
+///     find one, or you don't have a mode preference set, the command will fail. To save a mode \
+///     preference in the database, see `/mode`.
+/// - `runtype`: `TP` / `PRO`
+///   - If you don't specify this, the bot will default to `PRO`.
+/// - `course`: this can be any integer between 1-255.
+///   - If you either don't specify this, or put in `0`, the bot will default to `1`.
+#[poise::command(slash_command, on_error = "Error::global_handler")]
+pub async fn bmaptop(
+	ctx: Context<'_>,
+
+	#[description = "Choose a map"]
+	#[autocomplete = "autocomplete::map_name"]
+	map: autocomplete::GlobalMap,
+
+	#[description = "KZT/SKZ/VNL"] mode: Option<params::Mode>,
+
+	#[description = "TP/PRO"] runtype: Option<params::Runtype>,
+
+	#[description = "Which bonus?"]
+	#[min = 1]
+	#[max = 100]
+	course: Option<u8>,
+) -> Result<()> {
+	ctx.defer().await?;
+
+	let course = course.unwrap_or(1);
+	_maptop(ctx, map, mode, runtype, course).await?;
+
+	Ok(())
+}
+
+async fn _maptop(
+	ctx: Context<'_>,
+	map: autocomplete::GlobalMap,
+	mode: Option<params::Mode>,
+	runtype: Option<params::Runtype>,
+	course: u8,
+) -> Result<()> {
 	let mode = params::Mode::parse_param(mode, &ctx).await?;
 	let runtype = runtype.unwrap_or_default();
 	let maptop =
-		global_api::get_maptop(map.id.into(), mode, runtype.into(), 0, ctx.gokz_client()).await?;
+		global_api::get_maptop(map.id.into(), mode, runtype.into(), course, ctx.gokz_client())
+			.await?;
 
 	if maptop.is_empty() {
 		return Err(Error::NoRecords);
@@ -49,7 +102,13 @@ pub async fn maptop(
 		.chunks(records_per_page)
 		.enumerate()
 	{
-		let title = format!("[{} {:?}] Top 100 on {}", mode.short(), runtype, map.name);
+		let mut title = format!("[{} {:?}] Top 100 on {}", mode.short(), runtype, map.name);
+
+		if course > 0 {
+			use std::fmt::Write;
+			write!(&mut title, " B{}", course)?;
+		};
+
 		let url = format!("{}?{}=", map.kzgo_link(), mode.short().to_lowercase());
 		let thumbnail = map.thumbnail();
 

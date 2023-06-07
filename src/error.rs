@@ -204,3 +204,9 @@ impl From<gokz_rs::Error> for Error {
 		Self::GOKZ(err)
 	}
 }
+
+impl From<std::fmt::Error> for Error {
+	fn from(err: std::fmt::Error) -> Self {
+		Self::Custom(err.to_string())
+	}
+}

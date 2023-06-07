@@ -3,18 +3,18 @@ use std::ops::Deref;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ChoiceParameter)]
 pub enum Runtype {
-	#[name = "PRO"]
-	Pro = 0,
-
 	#[name = "TP"]
 	TP = 1,
+
+	#[name = "PRO"]
+	Pro = 0,
 }
 
 impl From<bool> for Runtype {
 	fn from(b: bool) -> Self {
 		match b {
-			false => Self::Pro,
 			true => Self::TP,
+			false => Self::Pro,
 		}
 	}
 }
@@ -29,8 +29,8 @@ impl Deref for Runtype {
 	type Target = bool;
 	fn deref(&self) -> &Self::Target {
 		match self {
-			Runtype::Pro => &false,
 			Runtype::TP => &true,
+			Runtype::Pro => &false,
 		}
 	}
 }

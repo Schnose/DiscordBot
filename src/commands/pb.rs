@@ -35,6 +35,63 @@ pub async fn pb(
 ) -> Result<()> {
 	ctx.defer().await?;
 
+	let course = 0;
+	_pb(ctx, map, mode, player, course).await?;
+
+	Ok(())
+}
+
+/// A player's personal best on a bonus course.
+///
+/// This command will fetch a player's personal best on a particular bonus. You are required to \
+/// specify a `map` and may also specify the following options:
+///
+/// - `mode`: `KZTimer` / `SimpleKZ` / `Vanilla`
+///   - If you don't specify this, the bot will search the database for your UserID. If it can't \
+///     find one, or you don't have a mode preference set, the command will fail. To save a mode \
+///     preference in the database, see `/mode`.
+/// - `player`: this can be any string. The bot will try its best to interpret it as something \
+///   useful. If you want to help it with that, specify one of the following:
+///   - a `SteamID`, e.g. `STEAM_1:1:161178172`, `U:1:322356345` or `76561198282622073`
+///   - a `Mention`, e.g. `@MyBestFriend`
+///   - a player's name, e.g. `AlphaKeks`
+///   - If you don't specify this, the bot will search the database for your UserID. If it can't \
+///     find one, or you don't have a SteamID set, the command will fail. To save a mode \
+///     preference in the database, see `/setsteam`.
+/// - `course`: this can be any integer between 1-255.
+///   - If you either don't specify this, or put in `0`, the bot will default to `1`.
+#[poise::command(slash_command, on_error = "Error::global_handler")]
+pub async fn bpb(
+	ctx: Context<'_>,
+
+	#[description = "Choose a map"]
+	#[autocomplete = "autocomplete::map_name"]
+	map: autocomplete::GlobalMap,
+
+	#[description = "KZT/SKZ/VNL"] mode: Option<params::Mode>,
+
+	#[description = "The player you want to check."] player: Option<params::Target>,
+
+	#[description = "Which bouns?"]
+	#[min = 1]
+	#[max = 100]
+	course: Option<u8>,
+) -> Result<()> {
+	ctx.defer().await?;
+
+	let course = course.unwrap_or(1);
+	_pb(ctx, map, mode, player, course).await?;
+
+	Ok(())
+}
+
+async fn _pb(
+	ctx: Context<'_>,
+	map: autocomplete::GlobalMap,
+	mode: Option<params::Mode>,
+	player: Option<params::Target>,
+	course: u8,
+) -> Result<()> {
 	let mode = params::Mode::parse_param(mode, &ctx)
 		.await
 		.unwrap_or(Mode::KZTimer);
@@ -49,7 +106,7 @@ pub async fn pb(
 		map.id.into(),
 		mode,
 		true,
-		0,
+		course,
 		ctx.gokz_client(),
 	)
 	.await;
@@ -59,7 +116,7 @@ pub async fn pb(
 		map.id.into(),
 		mode,
 		false,
-		0,
+		course,
 		ctx.gokz_client(),
 	)
 	.await;
@@ -79,7 +136,13 @@ pub async fn pb(
 		player_name = &rec.player_name;
 	}
 
-	let title = format!("[PB] {} on {}", player_name, map.name);
+	let mut title = format!("[PB] {} on {}", player_name, map.name);
+
+	if course > 0 {
+		use std::fmt::Write;
+		write!(&mut title, " B{}", course)?;
+	};
+
 	let url = format!("{}?{}=", map.kzgo_link(), mode.short().to_lowercase());
 	let thumbnail = map.thumbnail();
 
