@@ -95,6 +95,7 @@ async fn discord_bot(
 			},
 			commands: vec![
 				commands::ping(),
+				commands::invite(),
 				commands::db(),
 				commands::setsteam(),
 				commands::mode(),

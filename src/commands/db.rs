@@ -36,9 +36,7 @@ pub async fn db(
 		steam_id,
 		mode
 	}) = ctx.get_user_by_id(user_id).await? else {
-		ctx.send(|reply| {
-			reply.content(format!("{user_name} has no database entries."))
-		})
+		ctx.say(format!("{user_name} has no database entries."))
 		.await?;
 
 		return Ok(());

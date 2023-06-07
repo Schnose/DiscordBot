@@ -3,6 +3,9 @@ mod params;
 mod ping;
 pub use ping::ping;
 
+mod invite;
+pub use invite::invite;
+
 mod db;
 pub use db::db;
 

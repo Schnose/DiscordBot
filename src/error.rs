@@ -96,9 +96,7 @@ impl Error {
 				error!(state, "## Panicked during command execution.\n```\n{payload:?}\n```");
 
 				if let Err(err) = ctx
-					.send(|reply| {
-						reply.content("Panicked during command execution. Please report this.")
-					})
+					.say("Panicked during command execution. Please report this.")
 					.await
 				{
 					error!("Failed to reply to user.\n```\n{err:?}\n```");
@@ -112,10 +110,7 @@ impl Error {
 					"## Failed to parse arguments.\n\n### Error:\n```\n{error:?}\n```\n### Input:\n```\n{input:?}\n```"
 				);
 
-				if let Err(err) = ctx
-					.send(|reply| reply.content(error.to_string()))
-					.await
-				{
+				if let Err(err) = ctx.say(error.to_string()).await {
 					error!("Failed to reply to user.\n```\n{err:?}\n```");
 				}
 			}
@@ -128,7 +123,7 @@ impl Error {
 				);
 
 				if let Err(err) = ctx
-					.send(|reply| reply.content("Missing permissions <:PogO:824260850701434891>"))
+					.say("Missing permissions <:PogO:824260850701434891>")
 					.await
 				{
 					error!("Failed to reply to user.\n```\n{err:?}\n```");
@@ -137,7 +132,7 @@ impl Error {
 
 			FrameworkError::NotAnOwner { ctx } => {
 				if let Err(err) = ctx
-					.send(|reply| reply.content("You don't have permissions to use this command."))
+					.say("You don't have permissions to use this command.")
 					.await
 				{
 					error!("Failed to reply to user.\n```\n{err:?}\n```");
@@ -146,7 +141,7 @@ impl Error {
 
 			FrameworkError::GuildOnly { ctx } => {
 				if let Err(err) = ctx
-					.send(|reply| reply.content("This command only works in servers."))
+					.say("This command only works in servers.")
 					.await
 				{
 					error!("Failed to reply to user.\n```\n{err:?}\n```");
