@@ -6,3 +6,6 @@ pub use mode::Mode;
 
 mod target;
 pub use target::Target;
+
+mod runtype;
+pub use runtype::Runtype;
