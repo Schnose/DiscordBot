@@ -108,6 +108,7 @@ async fn discord_bot(
 				commands::bwr(),
 				commands::bpb(),
 				commands::bmaptop(),
+				commands::nocrouch(),
 			],
 			..Default::default()
 		})
