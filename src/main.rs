@@ -96,10 +96,11 @@ async fn discord_bot(
 			commands: vec![
 				commands::ping(),
 				commands::invite(),
+				commands::help(),
+				commands::report(),
 				commands::db(),
 				commands::setsteam(),
 				commands::mode(),
-				commands::help(),
 				commands::apistatus(),
 				commands::map(),
 				commands::wr(),

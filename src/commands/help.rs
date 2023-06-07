@@ -1,9 +1,7 @@
-use std::{collections::BTreeMap, time::Duration};
-
+use crate::{Context, Error, Result};
 use poise::serenity_prelude::{CollectComponentInteraction, InteractionResponseType};
 use schnose_discord_bot::State;
-
-use crate::{Context, Error, Result};
+use std::{collections::BTreeMap, time::Duration};
 
 /// Help Menu
 ///

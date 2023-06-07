@@ -159,6 +159,7 @@ pub trait State {
 	fn state(&self) -> &GlobalState;
 	fn owner(&self) -> UserId;
 	fn logs_channel(&self) -> ChannelId;
+	fn reports_channel(&self) -> ChannelId;
 	fn db(&self) -> &Pool<Postgres>;
 	fn logs_table(&self) -> &str;
 	fn users_table(&self) -> &str;
@@ -198,6 +199,12 @@ impl State for Context<'_> {
 
 	fn logs_channel(&self) -> ChannelId {
 		self.framework().user_data.logs_channel
+	}
+
+	fn reports_channel(&self) -> ChannelId {
+		self.framework()
+			.user_data
+			.reports_channel
 	}
 
 	fn logs_table(&self) -> &str {

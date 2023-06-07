@@ -8,6 +8,12 @@ pub use ping::ping;
 mod invite;
 pub use invite::invite;
 
+mod help;
+pub use help::help;
+
+mod report;
+pub use report::report;
+
 mod db;
 pub use db::db;
 
@@ -16,9 +22,6 @@ pub use setsteam::setsteam;
 
 mod mode;
 pub use mode::mode;
-
-mod help;
-pub use help::help;
 
 mod apistatus;
 pub use apistatus::apistatus;
