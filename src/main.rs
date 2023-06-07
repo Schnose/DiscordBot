@@ -112,6 +112,7 @@ async fn discord_bot(
 				commands::random(),
 				commands::top(),
 				commands::btop(),
+				commands::unfinished(),
 			],
 			..Default::default()
 		})
