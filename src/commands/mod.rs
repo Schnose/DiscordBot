@@ -37,3 +37,6 @@ pub use maptop::{bmaptop, maptop};
 
 mod nocrouch;
 pub use nocrouch::nocrouch;
+
+mod random;
+pub use random::random;
