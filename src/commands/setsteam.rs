@@ -5,12 +5,13 @@ use sqlx::QueryBuilder;
 
 /// Save your SteamID in the bot's database.
 ///
-/// This command will save your `SteamID` in the bot's database so it can be use for other \
+/// This command will save your `SteamID` in the bot's database so it can be used for other \
 /// commands such as `/pb`. By not specifiying the `steam_id` parameter you can delete your \
 /// current entry from the database.
 #[poise::command(slash_command, on_error = "Error::global_handler")]
 pub async fn setsteam(
 	ctx: Context<'_>,
+
 	#[description = "Your SteamID, e.g. `STEAM_1:1:161178172` or `76561198282622073`"]
 	steam_id: Option<SteamID>,
 ) -> Result<()> {

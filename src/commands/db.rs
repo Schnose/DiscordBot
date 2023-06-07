@@ -10,6 +10,7 @@ use schnose_discord_bot::State;
 #[poise::command(slash_command, on_error = "Error::global_handler")]
 pub async fn db(
 	ctx: Context<'_>,
+
 	#[description = "The user you want to retrieve information about."] user: Option<Member>,
 	#[description = "Make the message visible for other people."] public: Option<params::Bool>,
 ) -> Result<()> {
@@ -29,7 +30,12 @@ pub async fn db(
 			(user.id, user.name.clone())
 		});
 
-	let Some(database::User { discord_id, name, steam_id, mode }) = ctx.get_user_by_id(user_id).await? else {
+	let Some(database::User {
+		discord_id,
+		name,
+		steam_id,
+		mode
+	}) = ctx.get_user_by_id(user_id).await? else {
 		ctx.send(|reply| {
 			reply.content(format!("{user_name} has no database entries."))
 		})

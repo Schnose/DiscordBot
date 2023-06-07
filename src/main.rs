@@ -93,7 +93,12 @@ async fn discord_bot(
 					EventHandler::handle(ctx, event, framework_ctx, global_state).await
 				})
 			},
-			commands: vec![commands::ping(), commands::db(), commands::setsteam()],
+			commands: vec![
+				commands::ping(),
+				commands::db(),
+				commands::setsteam(),
+				commands::mode(),
+			],
 			..Default::default()
 		})
 		.setup(|ctx, _ready, framework| {
