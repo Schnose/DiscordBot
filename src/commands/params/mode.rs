@@ -1,3 +1,4 @@
+use crate::{Context, Error, Result, State};
 use poise::ChoiceParameter;
 use std::ops::Deref;
 
@@ -11,6 +12,25 @@ pub enum Mode {
 
 	#[name = "Vanilla"]
 	Vanilla = 202,
+}
+
+impl Mode {
+	pub async fn parse_param(mode: Option<Self>, ctx: &Context<'_>) -> Result<gokz_rs::Mode> {
+		if let Some(mode) = mode {
+			return Ok(mode.into());
+		}
+
+		if let Some(user) = ctx
+			.get_user_by_id(ctx.author().id)
+			.await?
+		{
+			if let Some(mode) = user.mode {
+				return Ok(mode);
+			}
+		}
+
+		Err(Error::NoMode)
+	}
 }
 
 impl From<gokz_rs::Mode> for Mode {

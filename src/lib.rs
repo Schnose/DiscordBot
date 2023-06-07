@@ -34,3 +34,6 @@ pub type Context<'ctx> = poise::Context<'ctx, GlobalState, Error>;
 
 /// Contains all types regarding the bot's database.
 pub mod database;
+
+/// Contains utility functions to parse GlobalAPI data
+pub mod global_api;

@@ -24,3 +24,6 @@ pub use apistatus::apistatus;
 
 mod map;
 pub use map::map;
+
+mod wr;
+pub use wr::wr;

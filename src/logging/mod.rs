@@ -56,7 +56,7 @@ impl TryFrom<u8> for Level {
 /// send the content as a message in a discord channel.
 #[macro_export]
 macro_rules! log {
-	( $level:literal, $state:expr, $( $args:tt )* ) => {
+	( $level:literal, $ping_owner:literal, $state:expr, $( $args:tt )* ) => {
 		'log: {
 			let content = format!( $( $args )* );
 
@@ -117,13 +117,19 @@ macro_rules! log {
 
 				// TODO: Log arguments to command?
 				// I don't know where I could get that info, but it would be nice to include.
-				message.embed(|embed| {
-					embed.color(color)
-						.title(level.to_string())
-						.description(content)
-						.footer(|f| f.text(date.to_string()))
-				})
+				message
+					.embed(|embed| {
+						embed.color(color)
+							.title(level.to_string())
+							.description(content.chars().take(4096).collect::<String>())
+							.footer(|f| f.text(date.to_string()))
+					});
 
+				if $ping_owner {
+					message.content(format!("<@{}>", $state.owner_id.as_u64()));
+				}
+
+				message
 			}).await {
 				::tracing::error!("Failed to send logs to discord.\n\t{err:?}");
 				break 'log;
@@ -136,7 +142,7 @@ macro_rules! log {
 /// will also send the content as a message in a discord channel.
 #[macro_export]
 macro_rules! trace {
-	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(0, $ctx, $($args)*) };
+	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(0, false, $ctx, $($args)*) };
 	( $( $args:tt )* ) => { ::tracing::trace!( $( $args )* ) };
 }
 
@@ -144,7 +150,7 @@ macro_rules! trace {
 /// will also send the content as a message in a discord channel.
 #[macro_export]
 macro_rules! debug {
-	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(1, $ctx, $($args)*) };
+	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(1, false, $ctx, $($args)*) };
 	( $( $args:tt )* ) => { ::tracing::debug!( $( $args )* ) };
 }
 
@@ -152,7 +158,7 @@ macro_rules! debug {
 /// will also send the content as a message in a discord channel.
 #[macro_export]
 macro_rules! info {
-	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(2, $ctx, $($args)*) };
+	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(2, false, $ctx, $($args)*) };
 	( $( $args:tt )* ) => { ::tracing::info!( $( $args )* ) };
 }
 
@@ -160,7 +166,7 @@ macro_rules! info {
 /// will also send the content as a message in a discord channel.
 #[macro_export]
 macro_rules! warn {
-	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(3, $ctx, $($args)*) };
+	( $ctx:expr, $( $args:tt )* ) => { $crate::log!(3, false, $ctx, $($args)*) };
 	( $( $args:tt )* ) => { ::tracing::warn!( $( $args )* ) };
 }
 
@@ -168,6 +174,6 @@ macro_rules! warn {
 /// will also send the content as a message in a discord channel.
 #[macro_export]
 macro_rules! error {
-	($ctx:expr, $( $args:tt )* ) => { $crate::log!(4, $ctx, $($args)*) };
+	($ctx:expr, $( $args:tt )* ) => { $crate::log!(4, true, $ctx, $($args)*) };
 	( $( $args:tt )* ) => { ::tracing::error!( $( $args )* ) };
 }

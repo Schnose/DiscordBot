@@ -68,15 +68,21 @@ pub enum Error {
 	/// An error from [`gokz_rs`]
 	#[error("{0}")]
 	GOKZ(gokz_rs::Error),
+
+	/// The user did not specify a mode and also does not have a preference saved in the database
+	#[error("You did not specify a `mode` and also don't have a preference set. Either specify one, or use `/mode` to save a fallback preference.")]
+	NoMode,
 }
 
 impl Error {
 	/// Global error handler for slash commands
 	pub async fn global_handler(error: FrameworkError<'_, crate::GlobalState, Error>) {
 		if let Some(ctx) = error.ctx() {
-			error!(ctx.state(), "Received error: {error:?}");
+			warn!(ctx.state(), "Received error:\n```\n{error}\n```");
+			tracing::warn!("Received error: {error:?}");
 		} else {
-			error!("Received error: {error:?}");
+			warn!("Received error:\n```\n{error}\n```");
+			tracing::warn!("Received error: {error:?}");
 		}
 
 		match error {
@@ -92,7 +98,7 @@ impl Error {
 
 			FrameworkError::Command { error, ctx } => {
 				let state = ctx.state();
-				error!(state, "## Failed to handle command.\n```\n{error:?}\n```");
+				warn!(state, "## Failed to handle command.\n```\n{error:?}\n```");
 			}
 
 			FrameworkError::CommandPanic { payload, ctx } => {

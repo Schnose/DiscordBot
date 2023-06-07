@@ -68,7 +68,7 @@ impl poise::SlashArgument for GlobalMap {
 
 		let map = global_map::GlobalMap::fuzzy_search(global_maps, map_name.to_owned()).ok_or(
 			SlashArgError::Parse {
-				error: "Invalid map name.".into(),
+				error: format!("`{map_name}` is not a valid map name.").into(),
 				input: value.to_string(),
 			},
 		)?;
