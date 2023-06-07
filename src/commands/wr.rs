@@ -74,7 +74,7 @@ async fn _wr(
 	}
 
 	let ((tp_time, tp_links), (pro_time, pro_links)) =
-		crate::global_api::parse_records(&tp_wr, &pro_wr);
+		crate::global_api::parse_records(&tp_wr, &pro_wr, None).await;
 
 	let mut title = format!("[WR] {}", map.name);
 

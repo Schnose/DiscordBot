@@ -1,20 +1,24 @@
 use gokz_rs::{global_api, Mode, SteamID};
 
-type Record = Result<global_api::Record, gokz_rs::Error>;
+type Record = std::result::Result<global_api::Record, gokz_rs::Error>;
 type Links = (Option<String>, Option<String>);
 
 /// Takes two records and formats them into embed descriptions and replay links
-pub fn parse_records(
+pub async fn parse_records(
 	tp: &Record,
 	pro: &Record,
+	fetch_places: Option<&gokz_rs::Client>,
 ) -> ((String, Option<Links>), (String, Option<Links>)) {
-	let tp = parse_record(tp);
-	let pro = parse_record(pro);
+	let tp = parse_record(tp, fetch_places).await;
+	let pro = parse_record(pro, fetch_places).await;
 	(tp, pro)
 }
 
 /// Takes a record and formats it into an embed description and replay links
-pub fn parse_record(rec: &Record) -> (String, Option<Links>) {
+pub async fn parse_record(
+	rec: &Record,
+	fetch_place: Option<&gokz_rs::Client>,
+) -> (String, Option<Links>) {
 	match rec {
 		Err(_) => (String::from("😔"), None),
 		Ok(rec) => {
@@ -25,6 +29,16 @@ pub fn parse_record(rec: &Record) -> (String, Option<Links>) {
 				n => format!(" ({n} TPs)"),
 			};
 
+			let place = 'place: {
+				if let Some(client) = fetch_place {
+					if let Ok(place) = global_api::get_place(rec.id, client).await {
+						break 'place format!("[#{place}] ");
+					};
+				}
+
+				String::new()
+			};
+
 			let player_name = format!(
 				"[{name}](https://kzgo.eu/players/{steam_id}?{mode}=)",
 				name = rec.player_name,
@@ -32,7 +46,7 @@ pub fn parse_record(rec: &Record) -> (String, Option<Links>) {
 				mode = rec.mode.short().to_lowercase(),
 			);
 
-			let formatted = format!("{time}{teleports}\n> by {player_name}");
+			let formatted = format!("{place}{time}{teleports}\n> by {player_name}");
 			let links = Some((rec.replay_view_link(), rec.replay_download_link()));
 
 			(formatted, links)

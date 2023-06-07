@@ -93,6 +93,12 @@ async fn discord_bot(
 					EventHandler::handle(ctx, event, framework_ctx, global_state).await
 				})
 			},
+			// TODO: some commands are not supported by SchnoseAPI anymore, add them back when they
+			// work again.
+			//
+			// - `/recent`
+			// - `/profile`
+			//   -> 12b252e799c9d899484a59797a5e26fea95ab62a
 			commands: vec![
 				commands::ping(),
 				commands::invite(),

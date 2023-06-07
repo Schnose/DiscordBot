@@ -126,7 +126,7 @@ async fn _pb(
 	}
 
 	let ((tp_time, tp_links), (pro_time, pro_links)) =
-		crate::global_api::parse_records(&tp_wr, &pro_wr);
+		crate::global_api::parse_records(&tp_wr, &pro_wr, Some(ctx.gokz_client())).await;
 
 	let mut player_name = &ctx.author().name;
 
